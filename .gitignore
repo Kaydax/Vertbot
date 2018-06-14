@@ -1,0 +1,6 @@
+node_modules
+backups
+secret.js
+lavalink/logs
+npm-debug.log
+config.json

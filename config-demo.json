@@ -1,0 +1,10 @@
+{
+    "dbUrl": "mongodb://127.0.0.1:27017",
+    "dbName": "vertbot",
+    "autoSave": true,
+    "perms": {
+      "<your id>": ["dev"]
+    },
+    "autoSaveInterval": 60000,
+    "prefix": "-"
+}
