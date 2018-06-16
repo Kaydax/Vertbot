@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kaydax/Vertbot.git"
+    "url": "git@gitlab.com:Kaydax/Vertbot.git"
   },
   "keywords": [
     "Discord",
