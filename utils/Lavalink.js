@@ -7,7 +7,7 @@ module.exports = class Lavalink
   {
     this.app = app;
 
-    this.nodes = [{ host: 'localhost', port: 80, region: 'us', password: 'youshallnotpass' }]; //TODO
+    this.nodes = this.app.config.nodes //[{ host: 'localhost', port: 80, region: 'us', password: 'youshallnotpass' }]; //TODO
     this.regions = {
       eu: ['eu', 'amsterdam', 'frankfurt', 'russia', 'hongkong', 'singapore', 'sydney'],
       us: ['us', 'brazil'],
