@@ -30,7 +30,7 @@ U.currentVC = function(app, gid)
   return vc;
 }
 
-U.sharedVc = function(app, msg, gid)
+/*U.sharedVc = function(app, msg, gid)
 {
   if()
   {
@@ -38,7 +38,7 @@ U.sharedVc = function(app, msg, gid)
   } else {
 
   }
-}
+}*/
 
 U.onOff = function(onOff)
 {
