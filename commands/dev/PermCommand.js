@@ -72,4 +72,4 @@ module.exports = class PermCommand extends Command
   }
 }
 
-var U = require.main.require("./utils/utils.js");
+var U = require.main.require("./utils/Utils.js");
