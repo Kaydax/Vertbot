@@ -18,7 +18,7 @@ module.exports = class GotoCommand extends Command
     var gid = U.msg2gid(msg);
 
     //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
-    if()
+    //if()
     if(text.match(/^\d+$/) && (text.match(/^\d+$/) != 0) && (text.match(/^\d+$/) ))
     {
       app.bot.createMessage(msg.channel.id, text.match(/^\d+$/)[0]);
