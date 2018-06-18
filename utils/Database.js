@@ -57,4 +57,4 @@ module.exports = class Database
 }
 
 var mongoose = require("mongoose");
-var schema = require("./schema.js");
+var schema = require("./Schema.js");
