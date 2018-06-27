@@ -21,7 +21,7 @@ module.exports = class PrefixCommand extends Command
 
     return;*/
 
-    var prefix = (await app.db.getGuildSettings(msg.channel.guild.id)).prefix || this.config.prefix;
+    var prefix = (await app.db.getGuildSettings(msg.channel.guild.id)).prefix || app.config.prefix;
 
     if(text.length != 0)
     {
