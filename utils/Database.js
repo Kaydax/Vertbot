@@ -4,7 +4,7 @@ module.exports = class Database
   constructor(app)
   {
     this.app = app;
-    this.dbUrl = this.app.config.dbUrl; //"mongodb://127.0.0.1:27017"; //TODO: putin config
+    this.dbUrl =  ((this.dbLogin == true) ? (this.app.config.dbUser + ":" + this.app.config.dbPass + "@" + this.app.config.dbUrl) : (this.app.config.dbUrl));
     this.dbName = this.app.config.dbName; //"vertbot"; //TODO: putin config
 
     this.db = mongoose.createConnection(this.dbUrl + "/" + this.dbName); //TODO change dburl to dburl + dbname
