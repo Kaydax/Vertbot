@@ -1,9 +1,6 @@
 {
     "dbUrl": "mongodb://127.0.0.1:27017",
     "dbName": "vertbot",
-    "dbUser": "vertbot",
-    "dbPass": "password",
-    "dbLogin": false,
     "autoSave": true,
     "perms": {
       "<your id>": ["dev"]
