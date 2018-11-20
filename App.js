@@ -73,17 +73,25 @@ module.exports = class App
   {
     try
     {
-      //var prefix = (await this.db.getGuildSettings(msg.channel.guild.id)).prefix || this.config.prefix;
-      var prefix = (this.bot.user.id == "430118450795380736") ? "[=" : (await this.db.getGuildSettings(msg.channel.guild.id)).prefix || this.config.prefix;
-
-      var mention = msg.content.startsWith(this.bot.user.mention) ? "<@" + this.bot.user.id + ">" : "<@!" + this.bot.user.id + ">"
-
-      if((msg.content.startsWith(prefix) || msg.content.startsWith(mention)) && !msg.author.bot)
+      if(!msg.channel.type == 1)
       {
-        //the command
-        var text = msg.content.startsWith(prefix) ? msg.content.slice(prefix.length).trim() : msg.content.slice((mention).length).trim(); //TODO: trim?
+        //var prefix = (await this.db.getGuildSettings(msg.channel.guild.id)).prefix || this.config.prefix;
+        var prefix = (this.bot.user.id == "430118450795380736") ? "[=" : (await this.db.getGuildSettings(msg.channel.guild.id)).prefix || this.config.prefix;
 
-        this.commands.doCommand(msg, this, text); //Command system
+        var mention = msg.content.startsWith(this.bot.user.mention) ? "<@" + this.bot.user.id + ">" : "<@!" + this.bot.user.id + ">"
+
+        if((msg.content.startsWith(prefix) || msg.content.startsWith(mention)) && !msg.author.bot)
+        {
+          //the command
+          var text = msg.content.startsWith(prefix) ? msg.content.slice(prefix.length).trim() : msg.content.slice((mention).length).trim(); //TODO: trim?
+
+          this.commands.doCommand(msg, this, text); //Command system
+        }
+      } else {
+        if(!msg.author.bot)
+        {
+          this.bot.createMessage(msg.channel.id, U.createErrorEmbed("This is a DM chat", "I can't do anything in dms"));
+        }
       }
     }
     catch(e)
