@@ -1,2 +1,2 @@
 # Vertbot
-Vertbot - A lightweight multi purpose, lag free music bot
+Vertbot - A lightweight lag free music bot
