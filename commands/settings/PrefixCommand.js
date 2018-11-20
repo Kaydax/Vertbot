@@ -8,6 +8,7 @@ module.exports = class PrefixCommand extends Command
 
     this.name = "prefix";
     this.description = "Sets my prefix";
+    this.permissions = ["admin"];
   }
 
   async doCommand(msg, app, text)
@@ -22,6 +23,8 @@ module.exports = class PrefixCommand extends Command
     return;*/
 
     var prefix = (await app.db.getGuildSettings(msg.channel.guild.id)).prefix || app.config.prefix;
+
+    text = text.trim();
 
     if(text.length != 0)
     {

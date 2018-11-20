@@ -9,6 +9,7 @@ module.exports = class GotoCommand extends Command
     this.name = "goto";
     this.description = "Goto a song in the playlist";
     this.usage = "<# for video>"
+    this.permission = ["dj"]
   }
 
   async doCommand(msg, app, text)
@@ -18,13 +19,15 @@ module.exports = class GotoCommand extends Command
     var gid = U.msg2gid(msg);
 
     //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
-    //if()
-    if(text.match(/^\d+$/) && (text.match(/^\d+$/) != 0) && (text.match(/^\d+$/) ))
+    if(text.match(/^\d+$/) && (text.match(/^\d+$/) != 0))
     {
-      app.bot.createMessage(msg.channel.id, text.match(/^\d+$/)[0]);
       await pl.setPosition(text.match(/\d+/)[0] - 1); //advance playlist (wait for save confirmation to prevent glitch)
+      app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Set new track", "Set track to: `" + pl.tracks[text.match(/^\d+$/)[0] - 1].info.title + "`"));
 
-      app.lavalink.play(vc, msg);
+      if(U.currentVC(app, gid) != null)
+      {
+        app.lavalink.play(vc, msg, app);
+      }
     } else {
       app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Invalid number", "Please put a valid number"));
     }

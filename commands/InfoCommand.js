@@ -13,7 +13,7 @@ module.exports = class InfoCommand extends Command
   async doCommand(msg, app, text)
   {
     var prefix = (await app.db.getGuildSettings(msg.channel.guild.id)).prefix || app.config.prefix;
-    app.bot.createMessage(msg.channel.id, U.createInfoEmbed(app, msg.channel.guild.id, prefix));
+    app.bot.createMessage(msg.channel.id, U.createInfoEmbed(app, msg.channel.guild.id, prefix, msg));
   }
 }
 

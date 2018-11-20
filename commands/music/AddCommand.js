@@ -8,7 +8,7 @@ module.exports = class AddCommand extends Command
 
     this.name = "add";
     this.description = "add music to playlist";
-    this.usage = "<url/query>";
+    this.usage = "<url / query>";
   }
 
   async doCommand(msg, app, text)
@@ -17,11 +17,12 @@ module.exports = class AddCommand extends Command
     if(text.match(/^https?:\/\//i) == null)
     {
       text = "ytsearch:" + text;
-      
     }
 
     //app.bot.createMessage(msg.channel.id, text);
 
-    app.lavalink.add(msg, text);
+    app.lavalink.add(msg, text, false);
   }
 }
+
+var U = require.main.require("./utils/Utils.js");

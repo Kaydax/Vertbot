@@ -53,6 +53,8 @@ module.exports = class Command
   {
     text = text || message.content;
 
+    //Get the playlist settings for dj mode when checking permissions
+    var pl = await app.db.getPlaylist(message.channel.guild.id);
     //grab permissions for user that sent the message
     var perms = await P.getPerms(app, message);
 
@@ -60,13 +62,15 @@ module.exports = class Command
 
     if(ret != null && ret.sub != this)
     {
-      if(!U.canUseCommand(perms, ret.sub))
+      if(!U.canUseCommand(perms, ret.sub, pl))
       {
-        app.bot.createMessage(message.channel.id, U.wrapMention(message, "you seem to not have access to this command, so I can't let you use it."));
+        //app.bot.createMessage(message.channel.id, U.wrapCode("ur perms here: " + Array.from(perms).join(" ")));
+        app.bot.createMessage(message.channel.id, U.createErrorEmbed("You don't have permissions", "You seem to not have `" + ret.sub.permissions.join(", ") + "`"));
         return;
       }
 
       ret.sub.doCommand(message, app, ret.text);
+      return;
     }
 
     //TODO: display help, but not on root level
@@ -99,6 +103,7 @@ module.exports = class Command
     ret.sub = null;
 
     text = text.trim(); //TODO: hmm
+
     var token = text.split(/\s+/)[0]; //grab the first token in text
     token = token.toLowerCase() //just to be safe
 

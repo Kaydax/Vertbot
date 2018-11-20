@@ -9,13 +9,14 @@ module.exports = class StopCommand extends Command
     this.name = "stop";
     this.aliases = ["leave"];
     this.description = "stop playing music";
+    this.permissions = ["dj"];
   }
 
   async doCommand(msg, app, text)
   {
     var vc = U.msg2vc(msg);
 
-    app.lavalink.stop(msg);
+    app.lavalink.stop(msg, app);
   }
 }
 

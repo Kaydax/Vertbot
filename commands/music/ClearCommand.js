@@ -8,6 +8,7 @@ module.exports = class ClearCommand extends Command
 
     this.name = "clear";
     this.description = "clear the playlist";
+    this.permissions = ["dj"];
   }
 
   async doCommand(msg, app, text)
@@ -16,9 +17,9 @@ module.exports = class ClearCommand extends Command
     pl.clear();
     if(U.currentVC(app, msg.channel.guild.id) != null)
     {
-      app.lavalink.stop(msg);
+      app.lavalink.stop(msg, app);
     }
-    app.bot.createMessage(msg.channel.id, "playlist cleared");
+    app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Playlist cleared", "The playlist has been completely cleared"));
   }
 }
 

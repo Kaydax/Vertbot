@@ -8,9 +8,11 @@ module.exports = class Commands extends Command
 
     this.addCommand("./HelpCommand.js");
     this.addCommand("./PingCommand.js");
+    this.addCommand("./DonateCommand.js");
     this.addCommand("./SettingsCommand.js");
     this.addCommand("./InfoCommand.js");
     this.addCommand("./MusicCommand.js");
+    this.addCommand("./FunCommand.js");
     this.addCommand("./DevCommand.js");
 
     this.init();

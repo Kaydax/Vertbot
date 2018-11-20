@@ -7,10 +7,10 @@ module.exports = class PingCommand extends Command
     super();
 
     this.name = "ping";
-    this.description = "ping me daddy";
+    this.description = "pong";
   }
 
-  doCommand(msg, app, text)
+  async doCommand(msg, app, text)
   {
     app.bot.createMessage(msg.channel.id, 'Here is my current shard latency: ' + msg.channel.guild.shard.latency + "ms");
   }

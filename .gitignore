@@ -3,5 +3,7 @@ backups
 secret.js
 lavalink/logs
 lavalink/application.yml
+lavalink/Lavalink.jar.old
 npm-debug.log
 config.json
+utils/Utils.js.old

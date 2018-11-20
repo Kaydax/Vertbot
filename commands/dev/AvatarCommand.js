@@ -17,6 +17,7 @@ module.exports = class AvatarCommand extends Command
     var url = text.trim();
     const res = await require('snekfetch').get(url);
     app.bot.editSelf({ avatar: `data:image/jpg;base64,${res.body.toString('base64')}` });
+    app.bot.createMessage(msg.channel.id, "Avatar Set!")
   }
 }
 

@@ -9,16 +9,29 @@ module.exports = class PlayCommand extends Command
     this.name = "play";
     this.aliases = ["join"];
     this.description = "play music";
-    this.usage = "<url?>";
+    this.usage = "<url / query>";
   }
 
   async doCommand(msg, app, text)
   {
+    var vc = U.msg2vc(msg);
     if(msg.member.voiceState.channelID != null)
     {
-      app.lavalink.play(U.msg2vc(msg), msg, true);
+      if(text.length > 0)
+      {
+        if(text.match(/^https?:\/\//i) == null)
+        {
+          text = "ytsearch:" + text;
+        }
+
+        //app.bot.createMessage(msg.channel.id, text);
+
+        await app.lavalink.add(msg, text, true, vc, app);
+      } else {
+        app.lavalink.play(vc, msg, app, true);
+      }
     } else {
-      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No Voice Channel", "You seem to not be connected to any voice channel I can see. This may have something to do with my permissions"));
+      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No Voice Channel", "You seem to not be connected to any voice channel"));
     }
   }
 }

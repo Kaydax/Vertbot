@@ -6,8 +6,8 @@
       "<your id>": ["dev"]
     },
     "autoSaveInterval": 60000,
-    "prefix": "-",
+    "prefix": "v-",
     "nodes": [
-      { "host": "localhost", "port": 80, "region": "us", "password": "youshallnotpass" }
+      { "host": "localhost", "port": 2333, "region": "us", "password": "youshallnotpass" }
     ]
 }

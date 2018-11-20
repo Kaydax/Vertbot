@@ -5,6 +5,8 @@ var Schema = mongoose.Schema;
 var S = {};
 module.exports = S;
 
+/*----------Guild Data----------*/
+
 var guildSetting = Schema({
   id: String, //guild id
   type: {type: String, default: "guild"},
@@ -20,16 +22,20 @@ guildSetting.methods.setPrefix = function(prefix)
   this.save();
 }
 
+/*----------Playlist Data----------*/
+
 var playlist = Schema({
   id: String, //guild id
   type: {type: String, default: "playlist"},
   tracks: [],
   position: {type: Number, default: 0},
   volume: {type: Number, default: 100},
+  boost: {type: Number, default: 0},
   shuffle: Boolean,
   repeat: Boolean,
   autoRemove: Boolean,
   silent: Boolean,
+  djmode: Boolean
   //TODO: volume, time, etc
 });
 
@@ -48,11 +54,23 @@ playlist.methods.clear = async function()
   return await this.save();
 }
 
+playlist.methods.removeTrack = async function(index)
+{
+  //remove
+  this.tracks.splice(index, 1);
+  return await this.save();
+}
+
 playlist.methods.next = async function()
 {
   //increment, null safe
   this.position = this.position == null ? 0 : this.position;
-  this.position = this.position + 1;//Math.min(, this.tracks.length);
+  if(this.shuffle)
+  {
+    this.position = Math.floor(Math.random() * this.tracks.length);
+  } else {
+    this.position = this.position + 1;//Math.min(, this.tracks.length);
+  }
   return await this.save();
 }
 
@@ -104,6 +122,27 @@ playlist.methods.setSilent = async function(silent)
   return await this.save();
 }
 
+playlist.methods.setDJMode = async function(djmode)
+{
+  this.djmode = djmode;
+
+  return await this.save();
+}
+
+playlist.methods.setVolume = async function(volume)
+{
+  this.volume = volume;
+  return await this.save();
+}
+
+playlist.methods.setBoost = async function(boost)
+{
+  this.boost = boost;
+  return await this.save();
+}
+
+/*----------User Data----------*/
+
 var user = Schema({
   id: String, //user id
   type: {type: String, default: "user"},
@@ -145,12 +184,3 @@ user.methods.getPermissions = function(perm)
 {
   return this.permissions;
 }
-
-//Added by Kaydax | Start
-playlist.methods.setVolume = async function(volume)
-{
-  this.volume = volume;
-
-  return await this.save();
-}
-//End

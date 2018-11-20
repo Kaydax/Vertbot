@@ -1,8 +1,60 @@
 var U = {};
 
 var fd = require("format-duration");
+var format = require("number-format.js");
 
 module.exports = U;
+
+U.getUsersInVc = function(msg, vc)
+{
+  var members = Array.from(vc.voiceMembers.keys());
+  var users = 0;
+  var guild = msg.channel.guild;
+
+  for(var i = 0; i < members.length; i++)
+  {
+    if(!U.getMemberById(guild, members[i]).bot)
+    {
+      users++
+    }
+  }
+
+  return users;
+}
+
+U.hasRoleWithName = function(member, role)
+{
+  role = role.toLowerCase();
+
+  //get roles from guild
+  var rolesWithName = member.guild.roles;
+
+  //filter roles that have the same name as "role"
+  rolesWithName = rolesWithName.filter((e) => e.name.toLowerCase() == role);
+
+  //map to ids
+  rolesWithName = rolesWithName.map((e) => parseInt(e.id));
+  //console.log("role we want: " + rolesWithName)
+  //get roles of member
+  var userRoles = member.roles;
+
+  for(var i = 0; i < userRoles.length; i++)
+  {
+    var id = parseInt(userRoles[i]);
+
+    if(rolesWithName.includes(id))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+U.getMemberById = function(guild, id)
+{
+  return guild.members.filter((e) => e.id == id)[0];
+}
 
 /** finds the voice channel of the user that sent the given message */
 U.msg2vc = function(msg)
@@ -64,6 +116,7 @@ U.ms2str = function(ms, total)
 
 U.sendHelp = function(app, msg, command, self)
 {
+  //console.log("extra large penis", command, command.constructor.name, command.getHelp)
   U.reply(app, msg, U.wrapCode(command.getHelp(self)));
 }
 
@@ -72,7 +125,7 @@ U.reply = function(app, msg, text)
   app.bot.createMessage(msg.channel.id, U.wrapMention(msg, text));
 }
 
-U.getVolume = function(v, min, max)
+U.getVal = function(v, min, max)
 {
   var val = v.replace( /^\D+/g, '');
   return (val > min) ? ((val < max) ? val : max) : min;
@@ -81,19 +134,20 @@ U.getVolume = function(v, min, max)
 U.str2id = function(str)
 {
   str = str.trim();
-  var id = str.match(/<@(\d+)>|(\d+)/);
+  var id = str.match(/<@!?(\d+)>|(\d+)/);
   if(id == null)
   {
     return null;
   }
 
-  id = id[0];
+  //id = id[0];
+  id = id[1];
 
   return id;
 }
 
 /** returns true if the permission set has access to the command */
-U.canUseCommand = function(userPerms, command)
+U.canUseCommand = function(userPerms, command, pl)
 {
   if(command.permissions.length == 0)
   {
@@ -101,51 +155,40 @@ U.canUseCommand = function(userPerms, command)
   }
 
   //if we have all permissions
+  //REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEturn
   return command.permissions.every((reqPerm) => {
+
+    if(userPerms.includes("dev"))
+    {
+      return true;
+    }
+
     //if require permission is in user perms
     if(userPerms.includes(reqPerm))
     {
       return true;
     }
 
-    //REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEturn
-    if(reqPerm == "dev" && userPerms.includes("dev"))
-    {
-      return true;
-    }
-    else if(reqPerm == "owner" && ["dev", "owner"].some((e) => userPerms.includes(e)))
-    {
-      return true;
-    }
-    else if(reqPerm == "admin" && ["dev", "owner", "admin"].some((e) => userPerms.includes(e)))
-    {
-      return true;
-    }
-    else if(reqPerm == "donor" && ["dev", "donor"].some((e) => userPerms.includes(e)))
+    //override owner -> admin
+    if(reqPerm == "admin" && ["owner"].some((e) => userPerms.includes(e)))
     {
       return true;
     }
 
-    return false;
-
-  });
-}
-
-U.youtube = function(app, id)
-{
-  return new Promise((resolve, reject) =>
-  {
-    app.yt.getById(id, function(err, res)
+    //override owner & admin -> dj
+    if(reqPerm == "dj" && ["owner", "admin"].some((e) => userPerms.includes(e)))
     {
-      if(err)
-      {
-        reject(err);
-      }
-      else
-      {
-        resolve(res);
-      }
-    });
+      return true;
+    }
+
+    //override the dj permission check if dj mode is turned on
+    if((reqPerm == "dj" && pl.djmode == false) || (reqPerm == "dj" && pl.djmode == undefined))
+    {
+      return true;
+    }
+
+    return false; //User does not have the permissions to use the command
+
   });
 }
 
@@ -157,6 +200,51 @@ U.hexToColour = function(hex)
 U.getCurrentShard = function(app, gid)
 {
   return (app.bot.guilds.get(gid).shard.id + 1) + " / " + ((app.bot.shards.size != undefined || app.bot.shards.size != null) ? app.bot.shards.size : "1");
+}
+
+U.getLogicalChannel = function(app, guild)
+{
+  var chans = guild.channels.filter(c => !c.type);
+  var channels = Array.from(chans);
+
+  channels.sort((a,b) => a.position - b.position);
+
+  //Bot channel check
+  for(var i = 0; i < channels.length; i++)
+  {
+    if(channels[i].name.match(/(-bot)|(bot-)|^bot$/gi))
+    {
+      return channels[i];
+    }
+  }
+
+  //General Channel Check
+  for(var i = 0; i < channels.length; i++)
+  {
+    if(channels[i].name.match(/(-general)|(general-)|^general$/gi))
+    {
+      return channels[i];
+    }
+  }
+
+  //If the general and bot channel cannot be found, use the first channel the bot can speak in
+  for(var i = 0; i < channels.length; i++)
+  {
+    if(U.canSpeak(app, channels[i]))
+    {
+      return channels[i];
+    }
+  }
+
+  //If all else fails return null
+  return null;
+}
+
+U.canSpeak = function(app, chan)
+{
+  var id = app.bot.user.id;
+
+  return chan.permissionsOf(id).has("sendMessages");
 }
 
 //------------Embeds------------
@@ -189,9 +277,25 @@ U.author = function(name, url, icon)
   }
 }
 
-U.createSearchEmbed = function(data)
+U.createSearchEmbed = function(title, id, author)
 {
-
+  var url = "https://youtube.com/watch?v=" + id; //This is the link back to the video... you should understand how this works already
+  var thumbnail = "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg"; //This is pretty much how the api gets the thumbnail, but without the api
+  return {
+    embed:
+    {
+      color: U.hexToColour("00C4B1"),
+      description: "[" + title + "](" + url + ")",
+      author:
+      {
+        name: author
+      },
+      image:
+      {
+        url: thumbnail
+      }
+    }
+  }
 }
 
 U.createPlaylistEmbed = function(pl, player, vc)
@@ -201,7 +305,7 @@ U.createPlaylistEmbed = function(pl, player, vc)
   var nowPlaying = vc == undefined ? "Nothing" : curTrack.info.title;
   //TODO: player null check
   var time = player == null || curTrack == null ? "0:00 / 0:00" : U.ms2str(player.state.position) + " / " + U.ms2str(curTrack.info.length);
-  var modes = U.wrapCode("Repeat: " + U.onOff(pl.repeat) + ", Shuffle: " + U.onOff(pl.shuffle) + ", Silent: " + U.onOff(pl.silent));
+  var modes = U.wrapCode("Repeat: " + U.onOff(pl.repeat) + ", Shuffle: " + U.onOff(pl.shuffle) + ", Silent: " + U.onOff(pl.silent) + ", DJ Mode: " + U.onOff(pl.djmode));
 
   //var trackNames = pl.tracks.map((e) => e.info.title);
 
@@ -217,8 +321,8 @@ U.createPlaylistEmbed = function(pl, player, vc)
     {
       var t = pl.tracks[i];
       str += i == pl.position ? "> " : "  ";
-      str += i + 1 + ":   ";
-      str += t.info.title.length > 50 ? (t.info.title.substring(0, 50) + "...") : t.info.title;
+      str += pl.position <= 992 ? (i + 1 + ": ").padEnd(5, " ") : (i + 1 + ": ").padEnd(6, " ");
+      str += pl.position <= 992 ? (t.info.title.length > 50 ? (t.info.title.substring(0, 50) + "...") : t.info.title) : (t.info.title.length > 48 ? (t.info.title.substring(0, 48) + "...") : t.info.title);
       str += "\n";
     }
   }
@@ -227,6 +331,7 @@ U.createPlaylistEmbed = function(pl, player, vc)
   return {
     embed:
     {
+      color: U.hexToColour("00C4B1"),
       fields:
       [
         U.embedField("Playlist:", str, false),
@@ -238,21 +343,75 @@ U.createPlaylistEmbed = function(pl, player, vc)
   };
 }
 
-U.createInfoEmbed = function(app, gid, prefix)
+U.createInfoEmbed = function(app, gid, prefix, msg)
 {
   return {
     embed:
     {
-      author: U.author("Vertbot", "https://wiki.kaydax.xyz/", "https://kaydax.xyz/other/Vertbot-April.png"),
-      description: "Vertbot is a Discord bot built with Eris and Lavalink. Its main purpose is to be one of the only Discord bots that give people the power to give little lag music playback with very few limitations and have fun commands to anyone to mess around with.",
+      author: U.author("Vertbot", "https://kaydax.xyz/", app.bot.user.avatarURL),
+      description: "I'm Vertbot, a Discord bot built with Eris and Lavalink. My main purpose is to be one of the only Discord bots that give people the power to play music with little lag and very few limitations.",
+      color: U.hexToColour("00C4B1"),
       fields:
       [
         U.embedField("Current prefix:", prefix, true),
-        U.embedField("Servers:", "" + app.bot.guilds.size, true),
-        U.embedField("Shard:", U.getCurrentShard(app, gid), true)
-      ]
+        U.embedField("Current Build:", app.version, true),
+        U.embedField("Uptime:", U.ms2str(app.bot.uptime), true),
+        U.embedField("Servers:", format("#,###.", app.bot.guilds.size), true),
+        U.embedField("Users:", format("#,###.", app.bot.users.size), true),
+        U.embedField("Shard:", U.getCurrentShard(app, gid), true),
+        U.embedField("My Discord:", "[Join Now](https://discord.gg/WPUU2dF)", true),
+        U.embedField("Servers using music:", app.bot.voiceConnections.size, true),
+        U.embedField("Ping:", msg.channel.guild.shard.latency, true)
+      ],
+      footer:
+      {
+        text: "Developed by: Kaydax#0001 & tehZevo#0321"
+      }
     }
   } //U.embedField("", "", true)
+}
+
+U.createWelcomeEmbed = function(app)
+{
+  return {
+    embed:
+    {
+      author: U.author("Vertbot", "https://kaydax.xyz/", app.bot.user.avatarURL),
+      description: "Hello, I'm Vertbot! Thank you for adding me to your server. To get started just do `v-help` and look through the list of commands. If you don't understand how to use the commands, join my support server.",
+      color: U.hexToColour("00C4B1"),
+      fields:
+      [
+        U.embedField("My Support Server", "[Join Now](https://discord.gg/WPUU2dF)", true),
+        U.embedField("Vote For Me", "[Please Vote](https://discordbots.org/bot/316520238835433482/vote)", true),
+        U.embedField("Donate Now", "[Donate](https://donatebot.io/checkout/317570975908495361)", true),
+      ],
+      footer:
+      {
+        text: "Developed by: Kaydax#0001 & tehZevo#0321"
+      }
+    }
+  }
+}
+
+U.createBooruEmbed = function(user, image, tags, url)
+{
+  return {
+    embed:
+    {
+      title: "Booru command requested by " + user,
+      color: U.hexToColour("00C4B1"),
+      image:
+      {
+        url: image,
+        proxy_url: image
+      },
+      fields:
+      [
+        U.embedField("Tags:", "```" + tags + "```", false),
+        U.embedField("Post URL:", url, false)
+      ]
+    }
+  }
 }
 
 U.createSuccessEmbed = function(reason, desc)
@@ -263,6 +422,18 @@ U.createSuccessEmbed = function(reason, desc)
       title: "Success: " + reason,
       description: desc,
       color: U.hexToColour("009b19")
+    }
+  }
+}
+
+U.createNowPlayingEmbed = function(pos, desc)
+{
+  return {
+    embed:
+    {
+      title: "Now Playing " + pos + ":",
+      description: desc,
+      color: U.hexToColour("00C4B1")
     }
   }
 }
@@ -285,7 +456,8 @@ U.createQuickEmbed = function(title, desc)
     embed:
     {
       title: title,
-      description: desc
+      description: desc,
+      color: U.hexToColour("00C4B1")
     }
   }
 }

@@ -7,9 +7,11 @@ module.exports = class Lavalink
   {
     this.app = app;
 
-    this.nodes = this.app.config.nodes //[{ host: 'localhost', port: 80, region: 'us', password: 'youshallnotpass' }]; //TODO
+    //Note: As of 3.1.X and up, the WS and Rest Ports are the same
+    this.nodes = this.app.config.nodes //[{ host: 'localhost', port: 80, region: 'us', password: 'youshallnotpass' }];
     this.regions = {
-      eu: ['eu', 'amsterdam', 'frankfurt', 'russia', 'hongkong', 'singapore', 'sydney'],
+      asia: ['hongkong', 'singapore', 'sydney'],
+      eu: ['eu', 'amsterdam', 'frankfurt', 'russia'],
       us: ['us', 'brazil'],
     };
 
@@ -18,6 +20,7 @@ module.exports = class Lavalink
 
     //TODO: currently assuming single lavalink node...
     this.node = this.nodes[0];
+    //console.log(this.nodes[0]);
 
     this.playerManager = new PlayerManager(this.app.bot, this.nodes,
     {
@@ -32,13 +35,13 @@ module.exports = class Lavalink
   }
 
   /** pass voice channel and the message that caused the command, if play is called with an OOB position, position will be reset to 0 */
-  async play(vc, msg, doMessage)
+  async play(vc, msg, app, doMessage)
   {
     //get next track to play
     var pl = await this.app.db.getPlaylist(vc.guild.id);
     if(pl.tracks.length == 0)
     {
-      this.app.bot.createMessage(msg.channel.id, "No tracks in playlist");
+      this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No tracks in playlist", "There seems to be no tracks in the playlist, please add some and try again"));
       return;
     }
     if(pl.position < 0 || pl.position >= pl.tracks.length)
@@ -52,7 +55,16 @@ module.exports = class Lavalink
     {
       if(msg != null)
       {
-        this.app.bot.createMessage(msg.channel.id, "Track really shouldnt be null here... =/");
+        this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Track is null", "The track really shouldn't be null here..."));
+      }
+      return;
+    }
+
+    if(!vc.permissionsOf(this.app.bot.user.id).has("voiceConnect"))
+    {
+      if(msg != null)
+      {
+        this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Invalid permissions", "It seems that I don't have permission to join that voice channel"));
       }
       return;
     }
@@ -67,20 +79,22 @@ module.exports = class Lavalink
     }
 
     player.setVolume(pl.volume);
+    var bands = [{"band": 0,"gain": pl.boost},{"band": 1,"gain": pl.boost},{"band": 2,"gain": pl.boost}];
+    player.setEQ(bands);
     player.play(track.track); // track is the base64 track we get from Lavalink
     if(!pl.silent || doMessage)
     {
-      this.app.bot.createMessage(msg.channel.id, "Playing track " + (pl.position + 1) + " / " + pl.tracks.length + ": " + track.info.title);
+      this.app.bot.createMessage(msg.channel.id, U.createNowPlayingEmbed((pl.position + 1) + " / " + pl.tracks.length, "**" + track.info.title + "**"));
     }
   }
 
-  async stop(msg)
+  async stop(msg, app)
   {
     var vc = U.currentVC(this.app, msg.channel.guild.id);
     if(vc == null)
     {
       //throw "Bot is not in a vc";
-      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No Voice Channel", "You seem to not be connected to any voice channel I can see. This may have something to do with my permissions"));
+      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No Voice Channel", "You seem to not be connected to any voice channel"));
     }
 
     var player = await this.getPlayer(vc);
@@ -95,14 +109,27 @@ module.exports = class Lavalink
     this.app.bot.leaveVoiceChannel(vc.id);
   }
 
-  async add(msg, search)
+  async add(msg, search, play, vc, app)
   {
     var tracks = await this.resolveTracks(this.node, search);
 
-    if(tracks.length == 0)
+    if(tracks.tracks.length == 0)
     {
-      this.app.bot.createMessage(msg.channel.id, "No tracks to add");
+      this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No tracks to add", "There seems to be nothing found that I can add. Try to make your search more clear"));
       return;
+    }
+
+    //Show the video info from text search
+    if(search.startsWith("ytsearch:"))
+    {
+      var info = tracks.tracks[0].info;
+      var title = info.title;
+      var id = info.identifier;
+      var author = info.author;
+
+      //This used to be using the youtube api until I figured out how the thumbnail's worked
+
+      this.app.bot.createMessage(msg.channel.id, U.createSearchEmbed(title, id, author));
     }
 
     var pl = await this.app.db.getPlaylist(msg.channel.guild.id);
@@ -110,10 +137,30 @@ module.exports = class Lavalink
     //pl.addAll(tracks);
     //pl.add(tracks[0]);
 
-    msg.content.match(/https?:/) != null ? pl.addAll(tracks) : pl.add(tracks[0]);
+    //Lavalink 3 uses tracks.tracks[0] and not tracks[0] to add playlist info support
 
+    if(msg.content.match(/https?:/) != null)
+    {
+      await pl.addAll(tracks.tracks)
+    } else {
+      await pl.add(tracks.tracks[0]);
+    }
     //this.app.bot.createMessage(msg.channel.id, "Adding " + tracks.length + " tracks");
-    this.app.bot.createMessage(msg.channel.id, "Adding '" + tracks[0].info.title + "'");
+
+    if(tracks.loadType == "PLAYLIST_LOADED") {
+      this.app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Added new playlist", "Added all of `" + tracks.playlistInfo.name + "` to the playlist"))
+    } else {
+      this.app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Added new track", "Added `" + tracks.tracks[0].info.title + "` to the playlist"));
+    }
+
+    if(play)
+    {
+      this.play(vc, msg, app, true)
+    }
+
+    //This is for debuging track info:
+    //console.log(tracks);
+
     //var res = await U.youtube(this.app, tracks[0].info.identifier);
     //console.log(JSON.stringify(res.items[0].snippet.thumbnails.maxres.url, null, 2));
   }
@@ -152,10 +199,10 @@ module.exports = class Lavalink
     await pl.next();
     var vc = U.currentVC(this.app, msg.channel.guild.id);
 
-    if(pl.shuffle)
-    {
-      await pl.setPosition(Math.floor(Math.random() * pl.tracks.length));
-    }
+    //if(pl.shuffle)
+    //{
+    //  await pl.setPosition(Math.floor(Math.random() * pl.tracks.length));
+    //}
 
     //playlist ended
     if(pl.position >= pl.tracks.length)
@@ -249,7 +296,7 @@ module.exports = class Lavalink
   {
     try
     {
-      var result = await superagent.get(`http://${node.host}:2333/loadtracks?identifier=${search}`)
+      var result = await superagent.get(`http://${node.host}:${node.restport}/loadtracks?identifier=${search}`)
         .set('Authorization', node.password)
         .set('Accept', 'application/json');
     }
@@ -266,6 +313,8 @@ module.exports = class Lavalink
   }
 }
 
-var {PlayerManager} = require("eris-lavalink");
+var {PlayerManager} = require("vertbot-eris-lavalink");
 var superagent = require("superagent");
+var SpotifyWebApi = require('spotify-web-api-node');
+var spotifyApi = new SpotifyWebApi();
 var U = require.main.require("./utils/Utils.js");

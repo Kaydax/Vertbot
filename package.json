@@ -23,14 +23,20 @@
   "homepage": "https://github.com/Kaydax/Vertbot#readme",
   "dependencies": {
     "assert": "^1.4.1",
-    "eris": "^0.8.5",
-    "eris-lavalink": "^1.0.2",
+    "dblapi.js": "^2.3.0",
+    "eris": "^0.8.6",
+    "figlet": "^1.2.1",
     "format-duration": "^1.1.0",
     "install": "^0.11.0",
     "jsonpath": "^1.0.0",
+    "kaori": "^1.2.0",
     "mongodb": "^3.0.8",
     "mongoose": "^5.1.1",
+    "number-format.js": "^2.0.7",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
     "snekfetch": "^4.0.0",
-    "superagent": "^3.8.3"
+    "spotify-web-api-node": "git+https://github.com/thelinmichael/spotify-web-api-node.git",
+    "vertbot-eris-lavalink": "^1.0.1"
   }
 }

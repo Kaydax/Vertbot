@@ -12,15 +12,15 @@ module.exports = class MusicCommand extends Command
     this.usage = "<subcommand>";
 
     this.addCommand("./music/PlayCommand.js");
-    this.addCommand("./music/StopCommand.js");
     this.addCommand("./music/AddCommand.js");
-    this.addCommand("./music/PlaylistCommand.js");
+    this.addCommand("./music/StopCommand.js");
     this.addCommand("./music/ClearCommand.js");
+    this.addCommand("./music/RemoveCommand.js");
     this.addCommand("./music/SkipCommand.js");
     this.addCommand("./music/GotoCommand.js");
-    this.addCommand("./music/RepeatCommand.js");
-    this.addCommand("./music/SilentCommand.js");
-    this.addCommand("./music/ShuffleCommand.js");
     this.addCommand("./music/VolumeCommand.js");
+    this.addCommand("./music/BassCommand.js");
+    this.addCommand("./music/PlaylistCommand.js");
+    this.addCommand("./music/ControlCommand.js");
   }
 }
