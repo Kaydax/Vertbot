@@ -28,21 +28,18 @@ module.exports = class App
     //this.settings = new Settings(this);
 
     var secret = require("./secret.js");
-
-    const DBL = require("dblapi.js");
+    //Change the id here to make the DBL updating work with your bot (If you are using this for your own bot)
     if(this.bot.user.id == "316520238835433482")
     {
-      //Discord Bots List
-      console.log("DBL updating enabled...");
-      const dbl = new DBL(secret.dbl, {statsInterval: 900000}, this.bot);
+      console.log("DBL status enabled...");
+      const dbl = new DBL(secret.dbl, this.bot);
       dbl.on('posted', this.onPosted.bind(this));
-
-      //Discord Bots (API is disabled atm)
-      /*setInterval(() => {
-        DBA.postGuilds(this.bot, secret.dbots);
-        console.log("Posted stats to dbots!");
-      }, 900000);*/
     }
+  }
+
+  onPosted()
+  {
+    console.log("Server count posted!");
   }
 
   onDisconnect(err, id)
@@ -51,12 +48,6 @@ module.exports = class App
     //console.log("Lost connection to discord, trying to reconnect...");
     //this.bot.connect();
     console.log(err);
-  }
-
-  //Called when Discord Bots List updates its data
-  onPosted()
-  {
-    console.log("Server count updated for dbl");
   }
 
   onJoin(guild)
@@ -104,6 +95,7 @@ module.exports = class App
 
 //var YouTube = require('youtube-node');
 var Eris = require('eris');
+var DBL = require("dblapi.js");
 var assert = require("assert");
 var U = require('./utils/Utils.js');
 var DBA = require('./utils/Discord-Bots-api.js');
