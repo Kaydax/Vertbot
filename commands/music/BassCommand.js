@@ -8,7 +8,7 @@ module.exports = class BassCommand extends Command
 
     this.name = "bassboost";
     this.aliases = ["boost"];
-    this.description = "crank that bass up to 11 (well actually 1)";
+    this.description = "crank that bass up to 11 (well actually 100)";
     this.usage = "<#>";
   }
 
