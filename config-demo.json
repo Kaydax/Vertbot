@@ -6,6 +6,7 @@
       "<your id>": ["dev"]
     },
     "autoSaveInterval": 60000,
+    "disableDBL": true,
     "prefix": "v-",
     "nodes": [
       { "host": "localhost", "port": 2333, "region": "us", "password": "youshallnotpass" }

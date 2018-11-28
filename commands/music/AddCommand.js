@@ -21,7 +21,7 @@ module.exports = class AddCommand extends Command
 
     //app.bot.createMessage(msg.channel.id, text);
 
-    app.lavalink.add(msg, text, false);
+    await app.lavalink.add(msg, text, false);
   }
 }
 

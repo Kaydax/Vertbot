@@ -5,9 +5,15 @@ module.exports = class App
     var secret = require("./secret.js");
     this.bot = new Eris(secret.discord, { maxShards: 'auto' });
     this.commands = new Commands(this);
-    this.version = "2.0.0"
-
+    this.version = "2.0.1"
     this.config = JSON.parse(fs.readFileSync("./config.json"));
+
+    if(this.config.disableDBL == false)
+    {
+      this.dbl = new DBL(secret.dbl, this.bot)
+      this.dbl.on("posted", this.onPosted.bind(this));
+      this.dbl.on("error", this.onDBLError.bind(this))
+    }
 
     this.db = new Database(this);
     this.youtube = new Youtube(secret.youtube);
@@ -23,23 +29,20 @@ module.exports = class App
   onReady()
   {
     console.log("Ready!");
+    this.bot.editStatus("online", {name: "v-help for info", type: 0})
     //TODO: init function?
     this.lavalink = new Lavalink(this);
     //this.settings = new Settings(this);
-
-    var secret = require("./secret.js");
-    //Change the id here to make the DBL updating work with your bot (If you are using this for your own bot)
-    if(this.bot.user.id == "316520238835433482")
-    {
-      console.log("DBL status enabled...");
-      const dbl = new DBL(secret.dbl, this.bot);
-      dbl.on('posted', this.onPosted.bind(this));
-    }
   }
 
   onPosted()
   {
     console.log("Server count posted!");
+  }
+
+  onDBLError()
+  {
+    console.error("Server count could not be posted. This may be because of the fact there is no token");
   }
 
   onDisconnect(err, id)
