@@ -155,7 +155,8 @@ module.exports = class Lavalink
 
     if(play)
     {
-      this.play(vc, msg, app, true)
+      await pl.setPosition(pl.tracks.length - 1);
+      this.play(vc, msg, app, true);
     }
 
     //This is for debuging track info:
@@ -215,7 +216,7 @@ module.exports = class Lavalink
       else
       {
         setTimeout(() => this.stop(msg), 1000);
-        this.app.bot.createMessage(msg.channel.id, "Playlist over");
+        this.app.bot.createMessage(msg.channel.id, U.createQuickEmbed("Finished playing", "Playlist over"));
         return;
       }
     }
