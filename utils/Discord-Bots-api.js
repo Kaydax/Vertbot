@@ -5,7 +5,7 @@ module.exports = DBA;
 
 DBA.postGuilds = async function(bot, token)
 {
-  var url = "https://bots.discord.pw/api/bots/316520238835433482/stats";
+  var url = "https://discord.bots.gg/api/v1/bots/316520238835433482/stats";
   for(var i = 0; i < bot.shards.size; i++)
   {
     var options =
