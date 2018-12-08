@@ -13,6 +13,10 @@ module.exports = class App
       this.dbl = new DBL(secret.dbl, this.bot)
       this.dbl.on("posted", this.onPosted.bind(this));
       this.dbl.on("error", this.onDBLError.bind(this))
+
+      setInterval(() => {
+        DBA.postGuilds(this.bot, secret.dbots);
+      }, 1800000);
     }
 
     this.db = new Database(this);

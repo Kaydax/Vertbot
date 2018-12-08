@@ -26,6 +26,8 @@ DBA.postGuilds = async function(bot, token)
       console.log(err);
     });
   }
+
+  console.log("DBots Server Count Posted!");
 }
 
 var rp = require('request-promise');
