@@ -34,6 +34,7 @@ module.exports = class App
   {
     console.log("Ready!");
     this.bot.editStatus("online", {name: "v-help for info", type: 0})
+    var secret = require("./secret.js"); 
     if(this.config.disableDBL == false) { DBA.postGuilds(this.bot, secret.dbots); } //Post the guild stats to dbots apon launch
     //TODO: init function?
     this.lavalink = new Lavalink(this);
