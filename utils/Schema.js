@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var shuffle = require('shuffle-array');
 var Schema = mongoose.Schema;
 //oh boy here we go...
 
@@ -28,6 +29,7 @@ var playlist = Schema({
   id: String, //guild id
   type: {type: String, default: "playlist"},
   tracks: [],
+  indexes: [],
   position: {type: Number, default: 0},
   volume: {type: Number, default: 100},
   boost: {type: Number, default: 0},
@@ -43,13 +45,14 @@ S.playlist = playlist;
 
 playlist.methods.currentTrack = function()
 {
-  return this.tracks[this.position || 0];
+  return this.shuffle ? this.tracks[this.indexes[this.position || 0]] : this.tracks[this.position || 0];
 }
 
 playlist.methods.clear = async function()
 {
   //clear
   this.tracks.splice(0, this.tracks.length);
+  this.indexes.splice(0, this.tracks.length);
   this.position = 0;
   return await this.save();
 }
@@ -65,18 +68,9 @@ playlist.methods.next = async function()
 {
   //increment, null safe
   this.position = this.position == null ? 0 : this.position;
-  if(this.shuffle)
-  {
-    this.position = Math.floor(Math.random() * this.tracks.length);
-  } else {
-    this.position = this.position + 1;//Math.min(, this.tracks.length);
-  }
-  return await this.save();
-}
 
-playlist.methods.setPosition = async function(pos)
-{
-  this.position = pos
+  this.position = this.position + 1;
+
   return await this.save();
 }
 
@@ -97,8 +91,21 @@ playlist.methods.addAll = async function(tracks)
 {
   for(var track of tracks)
   {
-    await await this.add(track);
+    await this.add(track);
   }
+}
+
+playlist.methods.createShuffleArray = async function()
+{
+  var indexes = this.tracks.map((e, i) => i);
+  this.indexes = shuffle(indexes);
+  return await this.save();
+}
+
+playlist.methods.setPosition = async function(pos)
+{
+  this.position = pos
+  return await this.save();
 }
 
 playlist.methods.setRepeat = async function(repeat)

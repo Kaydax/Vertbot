@@ -39,11 +39,13 @@ module.exports = class Lavalink
   {
     //get next track to play
     var pl = await this.app.db.getPlaylist(vc.guild.id);
+
     if(pl.tracks.length == 0)
     {
       this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No tracks in playlist", "There seems to be no tracks in the playlist, please add some and try again"));
       return;
     }
+
     if(pl.position < 0 || pl.position >= pl.tracks.length)
     {
       await pl.restart();
@@ -84,7 +86,8 @@ module.exports = class Lavalink
     player.play(track.track); // track is the base64 track we get from Lavalink
     if(!pl.silent || doMessage)
     {
-      this.app.bot.createMessage(msg.channel.id, U.createNowPlayingEmbed((pl.position + 1) + " / " + pl.tracks.length, "**" + track.info.title + "**"));
+      var position = pl.shuffle ? pl.indexes[pl.position] + 1 : pl.position + 1;
+      this.app.bot.createMessage(msg.channel.id, U.createNowPlayingEmbed(position + " / " + pl.tracks.length, "**" + track.info.title + "**"));
     }
   }
 
@@ -153,6 +156,8 @@ module.exports = class Lavalink
       this.app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Added new track", "Added `" + tracks.tracks[0].info.title + "` to the playlist"));
     }
 
+    await pl.createShuffleArray();
+
     if(play)
     {
       await pl.setPosition(pl.tracks.length - 1);
@@ -191,7 +196,6 @@ module.exports = class Lavalink
     // REPLACED reason is emitted when playing without stopping, I ignore these to prevent skip loops
     if(data.reason && data.reason === 'REPLACED')
     {
-
       return;
     }
 
@@ -200,18 +204,13 @@ module.exports = class Lavalink
     await pl.next();
     var vc = U.currentVC(this.app, msg.channel.guild.id);
 
-    //if(pl.shuffle)
-    //{
-    //  await pl.setPosition(Math.floor(Math.random() * pl.tracks.length));
-    //}
-
     //playlist ended
     if(pl.position >= pl.tracks.length)
     {
       if(pl.repeat)
       {
         //do repeat
-          await pl.restart();
+        await pl.restart();
       }
       else
       {

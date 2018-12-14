@@ -32,7 +32,7 @@ module.exports = class SkipCommand extends Command
       //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
       await pl.next(); //advance playlist (wait for save confirmation to prevent glitch)
 
-      app.lavalink.play(vc, msg, app);
+      app.lavalink.play(vc, msg, app, true);
     } else {
       app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Repeat is on", "Turn off Repeat in order to skip"));
     }

@@ -35,6 +35,7 @@
     "number-format.js": "^2.0.7",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "shuffle-array": "^1.0.1",
     "snekfetch": "^4.0.0",
     "spotify-web-api-node": "git+https://github.com/thelinmichael/spotify-web-api-node.git",
     "vertbot-eris-lavalink": "^1.0.1"

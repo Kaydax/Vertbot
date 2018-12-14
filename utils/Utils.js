@@ -301,7 +301,8 @@ U.createSearchEmbed = function(title, id, author)
 U.createPlaylistEmbed = function(pl, player, vc)
 {
   //TODO: fill these in
-  var curTrack = pl.tracks[pl.position];
+  var curTrack = pl.shuffle ? pl.tracks[pl.indexes[pl.position]] : pl.tracks[pl.position];
+  var position = pl.shuffle ? pl.indexes[pl.position] : pl.position + 1;
   var nowPlaying = vc == undefined ? "Nothing" : curTrack.info.title;
   //TODO: player null check
   var time = player == null || curTrack == null ? "0:00 / 0:00" : U.ms2str(player.state.position) + " / " + U.ms2str(curTrack.info.length);
@@ -311,8 +312,8 @@ U.createPlaylistEmbed = function(pl, player, vc)
 
   //find start, end centered around current position (pl.position)
   var beforeAfter = 7;
-  var start = pl.position - beforeAfter;
-  var end = pl.position + beforeAfter;
+  var start = position - beforeAfter;
+  var end = position + beforeAfter;
 
   var str = "```markdown\n";
   for(var i = start; i < end; i++)
@@ -320,9 +321,9 @@ U.createPlaylistEmbed = function(pl, player, vc)
     if(i >= 0 && i < pl.tracks.length)
     {
       var t = pl.tracks[i];
-      str += i == pl.position ? "> " : "  ";
-      str += pl.position <= 992 ? (i + 1 + ": ").padEnd(5, " ") : (i + 1 + ": ").padEnd(6, " ");
-      str += pl.position <= 992 ? (t.info.title.length > 50 ? (t.info.title.substring(0, 50) + "...") : t.info.title) : (t.info.title.length > 48 ? (t.info.title.substring(0, 48) + "...") : t.info.title);
+      str += i == position ? "> " : "  ";
+      str += position <= 992 ? (i + 1 + ": ").padEnd(5, " ") : (i + 1 + ": ").padEnd(6, " ");
+      str += position <= 992 ? (t.info.title.length > 50 ? (t.info.title.substring(0, 50) + "...") : t.info.title) : (t.info.title.length > 48 ? (t.info.title.substring(0, 48) + "...") : t.info.title);
       str += "\n";
     }
   }
