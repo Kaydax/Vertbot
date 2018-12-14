@@ -14,6 +14,8 @@ module.exports = class App
       this.dbl.on("posted", this.onPosted.bind(this));
       this.dbl.on("error", this.onDBLError.bind(this))
 
+      DBA.postGuilds(this.bot, secret.dbots); //Post the stats apon launch
+
       setInterval(() => {
         DBA.postGuilds(this.bot, secret.dbots);
       }, 1800000);
