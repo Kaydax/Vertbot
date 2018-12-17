@@ -53,6 +53,8 @@ module.exports = class Lavalink
 
     var track = pl.currentTrack();
 
+    console.log(track);
+
     if(track == null)
     {
       if(msg != null)
@@ -160,7 +162,7 @@ module.exports = class Lavalink
 
     if(play)
     {
-      await pl.setPosition(pl.tracks.length - 1);
+      if(!pl.shuffle) { await pl.setPosition(pl.tracks.length - 1); };
       this.play(vc, msg, app, true);
     }
 
