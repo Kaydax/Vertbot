@@ -25,6 +25,7 @@ module.exports = class ShuffleCommand extends Command
     else if(cmd == "off")
     {
       await pl.setShuffle(false);
+      await pl.setPosition(pl.indexes[pl.position]); //This makes sure that when shuffle is turned off, it will stay on the song in the normal playlist so it will continue on
       app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Shuffle is now off", "Shuffle is now turned off"));
     }
     else if(cmd == "")

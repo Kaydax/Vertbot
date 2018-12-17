@@ -53,8 +53,6 @@ module.exports = class Lavalink
 
     var track = pl.currentTrack();
 
-    console.log(track);
-
     if(track == null)
     {
       if(msg != null)

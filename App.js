@@ -5,7 +5,7 @@ module.exports = class App
     var secret = require("./secret.js");
     this.bot = new Eris(secret.discord, { maxShards: 'auto' });
     this.commands = new Commands(this);
-    this.version = "2.1.1"
+    this.version = "2.1.2"
     this.config = JSON.parse(fs.readFileSync("./config.json"));
 
     if(this.config.disableDBL == false)
