@@ -302,7 +302,7 @@ U.createPlaylistEmbed = function(pl, player, vc)
 {
   //TODO: fill these in
   var curTrack = pl.shuffle ? pl.tracks[pl.indexes[pl.position]] : pl.tracks[pl.position];
-  var position = pl.shuffle ? pl.indexes[pl.position] : pl.position + 1;
+  var position = pl.shuffle ? pl.indexes[pl.position] : pl.position;
   var nowPlaying = vc == undefined ? "Nothing" : curTrack.info.title;
   //TODO: player null check
   var time = player == null || curTrack == null ? "0:00 / 0:00" : U.ms2str(player.state.position) + " / " + U.ms2str(curTrack.info.length);
