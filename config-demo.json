@@ -9,6 +9,6 @@
     "disableDBL": true,
     "prefix": "v-",
     "nodes": [
-      { "host": "localhost", "port": 2333, "region": "us", "password": "youshallnotpass" }
+      { "host": "localhost", "restport": 2333, "region": "us", "password": "youshallnotpass" }
     ]
 }
