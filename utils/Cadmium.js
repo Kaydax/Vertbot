@@ -117,8 +117,7 @@ module.exports = class Cadmium {
       let guild = this.app.bot.guilds.get(packet.guild);
       if (!guild) return;
 
-      let secretQuery = '?secret=' + encodeURIComponent(this.secret);
-      let url = this.endpointUrl + packet.url + secretQuery;
+      let url = this.endpointUrl + packet.url;
       this.app.bot.createMessage(packet.channel, "Cadmium song added to queue");
 
       let channel = guild.channels.get(packet.channel);
