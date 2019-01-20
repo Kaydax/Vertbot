@@ -1,6 +1,7 @@
 {
   "name": "vertbot",
-  "version": "2.1.2",
+  "version": "2.2.0",
+  "cadmiumVersion": "8f42da9",
   "description": "Vertbot - A lightweight multi purpose, lag free music bot",
   "main": "main.js",
   "scripts": {
@@ -37,6 +38,7 @@
     "request-promise": "^4.2.2",
     "shuffle-array": "^1.0.1",
     "snekfetch": "^4.0.0",
+    "split2": "^3.1.0",
     "spotify-web-api-node": "git+https://github.com/thelinmichael/spotify-web-api-node.git",
     "vertbot-eris-lavalink": "^1.0.1"
   }
