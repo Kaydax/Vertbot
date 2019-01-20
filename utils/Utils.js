@@ -366,7 +366,7 @@ U.createInfoEmbed = function(app, gid, prefix, msg)
       ],
       footer:
       {
-        text: "Developed by: Kaydax#0001 & tehZevo#0321"
+        text: "Developed by: Kaydax#0001 & tehZevo#0321. Cadmium integration by UniQMG#0522."
       }
     }
   } //U.embedField("", "", true)
