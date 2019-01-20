@@ -1,21 +1,25 @@
 const EventEmitter = require('events');
 const request = require("request");
 const split2 = require('split2');
+const fs = require('fs');
 
+const rootCACert = fs.readFileSync('./assets/cadmiumRootCert.pem');
 
 /**
  * Cadmium connection handler
  * @author UniQMG
  */
 module.exports = class Cadmium {
-  constructor({app, url, secret, version}) {
+  constructor({app, requestUrl, endpointUrl, secret, version}) {
     this.emitter = new EventEmitter();
     this.requestPipe = null;
     this.connection = null;
     this.connected = false;
     this.version = version;
     this.secret = secret;
-    this.url = url;
+    this.app = app;
+    this.requestUrl = requestUrl;
+    this.endpointUrl = endpointUrl;
   }
 
   /**
@@ -25,10 +29,13 @@ module.exports = class Cadmium {
    */
   getRequestOptions(query) {
     return {
-      url: this.url + (query || ''),
+      url: this.requestUrl + (query || ''),
       auth: {
         user: 'vertbot',
         pass: this.secret
+      },
+      agentOptions: {
+        ca: rootCACert
       },
       json: true
       // TODO: agentOptions: { ca: foo }
@@ -61,7 +68,8 @@ module.exports = class Cadmium {
         resolve();
       });
     }).then(() => {
-      return this._listen();
+      this._processPackets();
+      this._listen();
     });
   }
 
@@ -75,6 +83,7 @@ module.exports = class Cadmium {
     return new Promise((resolve, reject) => {
       this.requestPipe = request(this.getRequestOptions('/listen'))
         .on('response', response => {
+          console.log("Cadmium connection established");
           this.emitter.emit('connectionOpened', response);
           this.connection = response;
           this.connected = true;
@@ -101,6 +110,26 @@ module.exports = class Cadmium {
   }
 
   /**
+   * Begins processing packets
+   */
+  _processPackets() {
+    this.on('packet', packet => {
+      let guild = this.app.bot.guilds.get(packet.guild);
+      if (!guild) return;
+
+      let secretQuery = '?secret=' + encodeURIComponent(this.secret);
+      let url = this.endpointUrl + packet.url + secretQuery;
+      this.app.bot.createMessage(packet.channel, "Cadmium song added to queue");
+
+      let channel = guild.channels.get(packet.channel);
+      let voiceChannel = guild.channels.get(packet.voicechat);
+      let fakeMessage = { channel, content: url };
+
+      this.app.lavalink.add(fakeMessage, url, false, voiceChannel, this);
+    });
+  }
+
+  /**
    * Hooks a connection up to the emitter, which then fires 'packet' events.
    * @emits packet: Object
    */
@@ -110,7 +139,7 @@ module.exports = class Cadmium {
       try {
         this.emitter.emit('packet', JSON.parse(line));
       } catch(ex) {
-        let err = new Error("Unexpected error parsing response: " + ex + ', "' + line + '"');
+        let err = new Error("Unexpected error parsing response: " + ex.stack + ', "' + line + '"');
         this.emitter.emit('error', err);
       }
     })

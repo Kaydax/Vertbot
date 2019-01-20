@@ -10,5 +10,9 @@
     "prefix": "v-",
     "nodes": [
       { "host": "localhost", "restport": 2333, "region": "us", "password": "youshallnotpass" }
-    ]
+    ],
+    "cadmium": {
+      "url": "https://localhost:8448",
+      "secret": "airspeedofanunladenswallow"
+    }
 }

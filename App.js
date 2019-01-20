@@ -23,8 +23,9 @@ module.exports = class App
     this.youtube = new Youtube(secret.youtube);
     this.cadmium = new Cadmium({
       version: require('./package.json').cadmiumVersion,
+      endpointUrl: this.config.cadmium.endpointUrl,
+      requestUrl: this.config.cadmium.requestUrl,
       secret: this.config.cadmium.secret,
-      url: this.config.cadmium.url,
       app: this
     });
 
@@ -32,12 +33,6 @@ module.exports = class App
       console.log("Cadmium connected.");
     }).catch(ex => {
       console.log("Cadmium connnection failed: " + ex);
-    });
-
-    this.cadmium.on('packet', packet => {
-      console.log('packet', packet);
-      let url = packet.url;
-      this.bot.createMessage(packet.channel, "Cadmium requested play " + url);
     });
 
     this.cadmium.on('error', err => {
@@ -60,6 +55,7 @@ module.exports = class App
     if(this.config.disableDBL == false) { DBA.postGuilds(this.bot, secret.dbots); } //Post the guild stats to dbots apon launch
     //TODO: init function?
     this.lavalink = new Lavalink(this);
+
     //this.settings = new Settings(this);
   }
 

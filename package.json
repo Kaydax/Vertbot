@@ -1,7 +1,7 @@
 {
   "name": "vertbot",
   "version": "2.2.0",
-  "cadmiumVersion": "b9a799c",
+  "cadmiumVersion": "8f42da9",
   "description": "Vertbot - A lightweight multi purpose, lag free music bot",
   "main": "main.js",
   "scripts": {
