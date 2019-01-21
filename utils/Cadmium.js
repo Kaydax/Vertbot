@@ -1,6 +1,7 @@
 const EventEmitter = require('events');
 const request = require("request");
 const split2 = require('split2');
+const U = require('./Utils');
 const fs = require('fs');
 
 const rootCACert = fs.readFileSync('./assets/cadmiumRootCert.pem');
@@ -18,8 +19,8 @@ module.exports = class Cadmium {
     this.version = version;
     this.secret = secret;
     this.app = app;
-    this.requestUrl = requestUrl;
-    this.endpointUrl = endpointUrl;
+    this.requestUrl = requestUrl.replace(/\/$/, '');
+    this.endpointUrl = endpointUrl.replace(/\/$/, '');
   }
 
   /**
@@ -38,7 +39,6 @@ module.exports = class Cadmium {
         ca: rootCACert
       },
       json: true
-      // TODO: agentOptions: { ca: foo }
     }
   }
 
@@ -59,10 +59,14 @@ module.exports = class Cadmium {
           return;
         }
 
-        if (body.version !== this.version) {
-          let exp = `expected "${this.version}", got "${body.version}"`
-          reject(new Error(`Version mismatch, ${exp}.`));
-          return;
+        if (this.version == "skipCheck") {
+          console.log("Skipping Cadmium version check");
+        } else {
+          if (body.version !== this.version) {
+            let exp = `expected "${this.version}", got "${body.version}"`
+            reject(new Error(`Version mismatch, ${exp}.`));
+            return;
+          }
         }
 
         resolve();
@@ -114,17 +118,36 @@ module.exports = class Cadmium {
    */
   _processPackets() {
     this.on('packet', packet => {
-      let guild = this.app.bot.guilds.get(packet.guild);
-      if (!guild) return;
+      switch (packet.action) {
+        case "heartbeat":
+          break;
 
-      let url = this.endpointUrl + packet.url;
-      this.app.bot.createMessage(packet.channel, "Cadmium song added to queue");
+        case "notifyProcessing":
+          this.app.bot.createMessage(packet.channel, U.createQuickEmbed(
+            "Awaiting Cadmium song",
+            "Song will be added to queue on pipeline complete"
+          ));
+          break;
 
-      let channel = guild.channels.get(packet.channel);
-      let voiceChannel = guild.channels.get(packet.voicechat);
-      let fakeMessage = { channel, content: url };
+        case "playSong":
+          let guild = this.app.bot.guilds.get(packet.guild);
+          if (!guild) return;
 
-      this.app.lavalink.add(fakeMessage, url, false, voiceChannel, this);
+          let url = this.endpointUrl + packet.url;
+          let channel = guild.channels.get(packet.channel);
+          let voiceChannel = guild.channels.get(packet.voicechat);
+          let fakeMessage = { channel, content: url };
+
+          let tracks = this.app.lavalink.caddyAdd(fakeMessage, url, voiceChannel, packet.pipeline).catch(ex => {
+            this.app.bot.createMessage(packet.channel, U.createErrorEmbed(
+              "Error playing Cadmium track",
+              "This appears to be an internal issue, and changing your " +
+              "command will likely not help. Try again later"
+            ));
+            this.emitter.emit('error', ex);
+          });
+          break;
+      }
     });
   }
 
@@ -138,7 +161,8 @@ module.exports = class Cadmium {
       try {
         this.emitter.emit('packet', JSON.parse(line));
       } catch(ex) {
-        let err = new Error("Unexpected error parsing response: " + ex.stack + ', "' + line + '"');
+        // "Unexpected error parsing response: " + ex.stack + ', "' + line + '"'
+        let err = new Error(`Unexpected error parsing response ("${ex.stack}"): ${ex.stack}`);
         this.emitter.emit('error', err);
       }
     })
