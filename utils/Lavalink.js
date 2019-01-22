@@ -112,6 +112,33 @@ module.exports = class Lavalink
     this.app.bot.leaveVoiceChannel(vc.id);
   }
 
+  /**
+   * Endpoint for adding Cadmium tracks with more relevent errors
+   */
+  async caddyAdd(msg, url, vc, pipeline)
+  {
+    var tracks = await this.resolveTracks(this.node, url);
+    if (tracks.tracks.length == 0)
+    {
+      this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed(
+        "Unable to play Cadmium track",
+        "Please check your Cadmium command, or Cadmium's `vertbot.md` manual"
+      ));
+      return;
+    }
+
+    var pl = await this.app.db.getPlaylist(msg.channel.guild.id);
+    pl.add(tracks.tracks[0]);
+
+    tracks.tracks[0].info.title = pipeline;
+    this.app.bot.createMessage(msg.channel.id, U.createQuickEmbed(
+      "Cadmium song added to queue",
+      `Added pipeline \`${tracks.tracks[0].info.title}\` to the queue.`
+    ));
+    await pl.createShuffleArray();
+    return tracks;
+  }
+
   async add(msg, search, play, vc, app)
   {
     var tracks = await this.resolveTracks(this.node, search);

@@ -21,23 +21,28 @@ module.exports = class App
 
     this.db = new Database(this);
     this.youtube = new Youtube(secret.youtube);
-    this.cadmium = new Cadmium({
-      version: require('./package.json').cadmiumVersion,
-      endpointUrl: this.config.cadmium.endpointUrl,
-      requestUrl: this.config.cadmium.requestUrl,
-      secret: this.config.cadmium.secret,
-      app: this
-    });
 
-    this.cadmium.connect().then(() => {
-      console.log("Cadmium connected.");
-    }).catch(ex => {
-      console.log("Cadmium connnection failed: " + ex);
-    });
+    if (!this.config.cadmium) {
+      console.log("Cadmium integration disabled");
+    } else {
+      this.cadmium = new Cadmium({
+        version: require('./package.json').cadmiumVersion,
+        endpointUrl: this.config.cadmium.endpointUrl,
+        requestUrl: this.config.cadmium.requestUrl,
+        secret: this.config.cadmium.secret,
+        app: this
+      });
 
-    this.cadmium.on('error', err => {
-      console.log("Cadmium error: " + err);
-    });
+      this.cadmium.connect().then(() => {
+        console.log("Cadmium found, establishing connection.");
+      }).catch(ex => {
+        console.log("Cadmium connnection failed: " + ex);
+      });
+
+      this.cadmium.on('error', err => {
+        console.log("Cadmium error: " + err);
+      });
+    }
 
     this.bot.on("ready", this.onReady.bind(this));
     this.bot.on("guildCreate", this.onJoin.bind(this));
