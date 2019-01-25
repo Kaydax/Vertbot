@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 const request = require("request");
 const split2 = require('split2');
 const U = require('./Utils');
+const P = require('./Permissions.js');
 const fs = require('fs');
 
 const rootCACert = fs.readFileSync('./assets/cadmiumRootCert.pem');
@@ -85,6 +86,7 @@ module.exports = class Cadmium {
    */
   _listen() {
     return new Promise((resolve, reject) => {
+      if (this.requestPipe) this.requestPipe.end();
       this.requestPipe = request(this.getRequestOptions('/listen'))
         .on('response', response => {
           console.log("Cadmium connection established");
@@ -96,16 +98,16 @@ module.exports = class Cadmium {
         })
         .on('error', err => {
           this.emitter.emit('connectionError', err);
-          console.log("Failed to connect, retrying in 1s: " + err);
-          setTimeout(() => this._listen(), 1000);
+          console.log("Failed to connect, retrying in 5s: " + err);
+          setTimeout(() => this._listen(), 5000);
           this.requestPipe = null;
           this.connection = null;
           this.connected = false;
         })
         .on('close', () => {
           this.emitter.emit('connectionClosed');
-          console.log("Cadmium disconnected, attempting reconnect in 1s");
-          setTimeout(() => this._listen(), 1000);
+          console.log("Cadmium disconnected, attempting reconnect in 5s");
+          setTimeout(() => this._listen(), 5000);
           this.requestPipe = null;
           this.connection = null;
           this.connected = false;
@@ -114,15 +116,57 @@ module.exports = class Cadmium {
   }
 
   /**
+   * Tests whether the originating user of a given packet has a permission
+   * @param {Object} packet the packet
+   * @param {String} permission the permission string
+   */
+  async _testPermission(packet, permission) {
+    var playlist = await this.app.db.getPlaylist(packet.guild);
+    let guild = this.app.bot.guilds.get(packet.guild);
+    let member = guild.members.get(packet.user);
+    var perms = await P.getPerms(this.app, { member });
+    return U.canUseCommand(perms, { permissions: [permission] }, playlist);
+  }
+
+  /**
+   * Cancels a Cadmium pipeline via a packet
+   * @param {Object} packet
+   */
+   _cancelPipeline(packet) {
+    if (!packet.cancelUrl) return;
+    request(this.getRequestOptions(packet.cancelUrl), (err, res, body) => {
+      if (err) return this.emitter.emit('error', err);
+      if (res.statusCode !== 200) this.emitter.emit('error', new Error(
+        'Unexpected response code while canceling pipeline: ' + res.statusCode
+      ));
+    });
+  }
+
+  /**
    * Begins processing packets
    */
   _processPackets() {
-    this.on('packet', packet => {
+    this.on('packet', async packet => {
+
+      if (packet.action !== 'heartbeat')
+        console.log(packet.action, "packet");
+
+      var playlist = await this.app.db.getPlaylist(packet.guild);
+      let djError = playlist.djmode && !await this._testPermission(packet, "dj");
+
       switch (packet.action) {
         case "heartbeat":
           break;
 
         case "notifyProcessing":
+          if (djError) {
+            this.app.bot.createMessage(packet.channel, U.createErrorEmbed(
+              "Cannot add Cadmium song",
+              "You require the `dj` permission"
+            ));
+            this._cancelPipeline(packet);
+            return;
+          }
           this.app.bot.createMessage(packet.channel, U.createQuickEmbed(
             "Awaiting Cadmium song",
             "Song will be added to queue on pipeline complete"
@@ -130,6 +174,7 @@ module.exports = class Cadmium {
           break;
 
         case "playSong":
+          if (djError) return;
           let guild = this.app.bot.guilds.get(packet.guild);
           if (!guild) return;
 
@@ -138,7 +183,7 @@ module.exports = class Cadmium {
           let voiceChannel = guild.channels.get(packet.voicechat);
           let fakeMessage = { channel, content: url };
 
-          let tracks = this.app.lavalink.caddyAdd(fakeMessage, url, voiceChannel, packet.pipeline).catch(ex => {
+          this.app.lavalink.caddyAdd(fakeMessage, url, voiceChannel, packet.pipeline).catch(ex => {
             this.app.bot.createMessage(packet.channel, U.createErrorEmbed(
               "Error playing Cadmium track",
               "This appears to be an internal issue, and changing your " +

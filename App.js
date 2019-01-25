@@ -33,11 +33,21 @@ module.exports = class App
         app: this
       });
 
-      this.cadmium.connect().then(() => {
-        console.log("Cadmium found, establishing connection.");
-      }).catch(ex => {
-        console.log("Cadmium connnection failed: " + ex);
+      let silent = false;
+      let connect = (() => {
+        this.cadmium.connect().then(() => {
+          console.log("Cadmium found, establishing connection.");
+        }).catch(ex => {
+          if (!silent) {
+            silent = true;
+            console.log("Cadmium connnection failed: " + ex);
+            console.log("Retrying every 5 minutes until connect");
+            console.log("No further logs until connection succeeds");
+          }
+          setTimeout(connect, 5 * 60 * 1000);
+        });
       });
+      connect();
 
       this.cadmium.on('error', err => {
         console.log("Cadmium error: " + err);
