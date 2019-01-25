@@ -128,9 +128,9 @@ module.exports = class Lavalink
     }
 
     var pl = await this.app.db.getPlaylist(msg.channel.guild.id);
-    pl.add(tracks.tracks[0]);
-
     tracks.tracks[0].info.title = pipeline;
+    await pl.add(tracks.tracks[0]);
+
     this.app.bot.createMessage(msg.channel.id, U.createQuickEmbed(
       "Cadmium song added to queue",
       `Added pipeline \`${tracks.tracks[0].info.title}\` to the queue.`

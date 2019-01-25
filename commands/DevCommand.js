@@ -15,6 +15,7 @@ module.exports = class DevCommand extends Command
     this.addCommand("./dev/PermCommand.js");
     this.addCommand("./dev/PermsCommand.js");
     this.addCommand("./dev/AvatarCommand.js");
+    this.addCommand("./dev/ReconnectCommand.js");
     this.addCommand("./dev/SayCommand.js");
     this.addCommand("./dev/TestCommand.js");
   }
