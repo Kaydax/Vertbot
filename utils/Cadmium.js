@@ -22,6 +22,7 @@ module.exports = class Cadmium {
     this.app = app;
     this.requestUrl = requestUrl.replace(/\/$/, '');
     this.endpointUrl = endpointUrl.replace(/\/$/, '');
+    this._processPackets();
   }
 
   /**
@@ -72,10 +73,7 @@ module.exports = class Cadmium {
 
         resolve();
       });
-    }).then(() => {
-      this._processPackets();
-      this._listen();
-    });
+    }).then(() => this._listen());
   }
 
   /**
@@ -86,32 +84,44 @@ module.exports = class Cadmium {
    */
   _listen() {
     return new Promise((resolve, reject) => {
-      if (this.requestPipe) this.requestPipe.end();
-      this.requestPipe = request(this.getRequestOptions('/listen'))
-        .on('response', response => {
-          console.log("Cadmium connection established");
-          this.emitter.emit('connectionOpened', response);
-          this.connection = response;
-          this.connected = true;
-          this._hookStreamToEmitter(this.requestPipe);
-          resolve();
-        })
-        .on('error', err => {
-          this.emitter.emit('connectionError', err);
-          console.log("Failed to connect, retrying in 5s: " + err);
-          setTimeout(() => this._listen(), 5000);
-          this.requestPipe = null;
-          this.connection = null;
-          this.connected = false;
-        })
-        .on('close', () => {
-          this.emitter.emit('connectionClosed');
-          console.log("Cadmium disconnected, attempting reconnect in 5s");
-          setTimeout(() => this._listen(), 5000);
-          this.requestPipe = null;
-          this.connection = null;
-          this.connected = false;
-        });
+      if (this.requestPipe) this.requestPipe.terminate();
+      this.requestPipe = request(this.getRequestOptions('/listen'));
+
+      let terminated = false;
+      let pipe = this.requestPipe;
+      pipe.terminate = (() => {
+        terminated = true;
+        pipe.abort();
+        resolve();
+      });
+
+      this.requestPipe.on('response', response => {
+        if (terminated) return;
+        console.log("Cadmium connection established");
+        this.emitter.emit('connectionOpened', response);
+        this._hookStreamToEmitter(pipe);
+        this.connection = response;
+        this.connected = true;
+        resolve();
+      });
+      this.requestPipe.on('error', err => {
+        if (terminated) return;
+        this.emitter.emit('connectionError', err);
+        console.log("Failed to connect, retrying in 10s: " + err);
+        setTimeout(() => this._listen(), 10000);
+        this.requestPipe = null;
+        this.connection = null;
+        this.connected = false;
+      });
+      this.requestPipe.on('close', () => {
+        if (terminated) return;
+        this.emitter.emit('connectionClosed');
+        console.log("Cadmium disconnected, attempting reconnect in 5s");
+        setTimeout(() => this._listen(), 5000);
+        this.requestPipe = null;
+        this.connection = null;
+        this.connected = false;
+      });
     });
   }
 
@@ -147,9 +157,8 @@ module.exports = class Cadmium {
    */
   _processPackets() {
     this.on('packet', async packet => {
-
       if (packet.action !== 'heartbeat')
-        console.log(packet.action, "packet");
+        console.log(packet.action, "packet", Date.now());
 
       var playlist = await this.app.db.getPlaylist(packet.guild);
       let djError = playlist.djmode && !await this._testPermission(packet, "dj");
@@ -207,10 +216,10 @@ module.exports = class Cadmium {
         this.emitter.emit('packet', JSON.parse(line));
       } catch(ex) {
         // "Unexpected error parsing response: " + ex.stack + ', "' + line + '"'
-        let err = new Error(`Unexpected error parsing response ("${ex.stack}"): ${ex.stack}`);
+        let err = new Error(`Unexpected error parsing response ("${line}"): ${ex.stack}`);
         this.emitter.emit('error', err);
       }
-    })
+    });
   }
 
   /**
