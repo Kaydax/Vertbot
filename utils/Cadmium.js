@@ -28,20 +28,23 @@ module.exports = class Cadmium {
    */
   connect() {
     return new Promise((resolve, reject) => {
-      if (this.ws) this.ws.terminate();
+      if (this.ws) {
+        this.ws.skipReconnect = true;
+        this.ws.terminate();
+      }
 
       this.ws = new WebSocket(this.requestUrl, {
         headers: { secret: this.secret },
         ca: rootCACert
       });
 
-      let heartbeatMissed = false;
+      let ws = this.ws;
       let heartbeatTimeout;
       const heartbeat = (() => {
         clearTimeout(heartbeatTimeout);
         heartbeatTimeout = setTimeout(() => {
           console.log('Cadmium missed heartbeat, attempting instant reconnect.');
-          heartbeatMissed = true;
+          ws.skipReconnect = true;
           this.connect();
         }, 6000); // server heartbeat frequency is 5 seconds
       });
@@ -54,9 +57,8 @@ module.exports = class Cadmium {
       });
 
       this.ws.on('close', () => {
-        if (heartbeatMissed) return; // reconnect handled above
         clearTimeout(heartbeatTimeout);
-
+        if (ws.skipReconnect) return;
         console.log('Cadmium server disconnected, attempting reconnect in 60s');
         setTimeout(() => this.connect().catch(ex => null), 60 * 1000);
       });
@@ -107,8 +109,6 @@ module.exports = class Cadmium {
    * @param {VertPacket} packet
    */
   async _processPacket(packet) {
-    console.log(packet.action, "packet", Date.now(), packet);
-
     var playlist = await this.app.db.getPlaylist(packet.guild);
     let djError = playlist.djmode && !await this._testPermission(packet, "dj");
 
