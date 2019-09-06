@@ -19,9 +19,9 @@
   "author": "Kaydax",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Kaydax/Vertbot/issues"
+    "url": "https://gitlab.com/Kaydax/Vertbot/issues"
   },
-  "homepage": "https://github.com/Kaydax/Vertbot#readme",
+  "homepage": "https://gitlab.com/Kaydax/Vertbot#readme",
   "dependencies": {
     "assert": "^1.4.1",
     "dblapi.js": "^2.3.0",
