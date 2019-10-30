@@ -13,13 +13,16 @@ module.exports = class AddCommand extends Command
 
   async doCommand(msg, app, text)
   {
+    var pl = await app.db.getPlaylist(msg.channel.guild.id);
+    var perms = await P.getPerms(app, msg);
+
     //if query doesnt begin with http(s)://, prepend ytsearch:
     if(text.match(/^https?:\/\//i) == null)
     {
-      text = U.canUseCommand(perms, {permissions: ["dev"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
+      text = U.canUseCommand(perms, {permissions: ["youtube"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
     }
 
-    if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["dev"]}, pl))
+    if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["youtube"]}, pl))
     {
       app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Youtube is disabled", "Youtube playback has been disabled because of Youtube blocking music bots. Join the support server for more info"));
       return;

@@ -23,10 +23,10 @@ module.exports = class PlayCommand extends Command
       {
         if(text.match(/^https?:\/\//i) == null)
         {
-          text = U.canUseCommand(perms, {permissions: ["dev"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
+          text = U.canUseCommand(perms, {permissions: ["youtube"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
         }
 
-        if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["dev"]}, pl))
+        if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["youtube"]}, pl))
         {
           app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Youtube is disabled", "Youtube playback has been disabled because of Youtube blocking music bots. Join the support server for more info"));
           return;
