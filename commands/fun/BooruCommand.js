@@ -1,6 +1,6 @@
 var Command = require("../Command.js");
 
-module.exports = class AsciiCommand extends Command
+module.exports = class BooruCommand extends Command
 {
   constructor()
   {
@@ -27,10 +27,13 @@ module.exports = class AsciiCommand extends Command
       {
         if(sites.indexOf(site) > -1)
         {
-          var image = "";
-          kaori.search(site, { tags: tag, limit: 1, random: true })
-           .then(images => app.bot.createMessage(msg.channel.id, U.createBooruEmbed(msg.author.username, images[0].common.fileURL, images[0].common.tags.join(" "), images[0].common.fileURL)))
-           .catch(err => app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Something went wrong", "```" + err + "```")));
+          const images = kaori.search(site, { tags: tag, random: true }).then((images) =>
+          {
+            images.map(image => {
+              console.log();
+              app.bot.createMessage(msg.channel.id, U.createBooruEmbed(msg.author.username, image.fileURL, image.tags.join(" "), image.fileURL))
+            });
+          }).catch(err => app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Something went wrong", "```" + err + "```")));
         } else {
           app.bot.createMessage(msg.channel.id, U.createQuickEmbed("Here are the sites that are supported:","```" + sites.join("\n") + "```"));
         }
@@ -42,5 +45,4 @@ module.exports = class AsciiCommand extends Command
 }
 
 var U = require.main.require("./utils/Utils.js");
-var Kaori = require('kaori');
-var kaori = new Kaori();
+var kaori = require('kaori');

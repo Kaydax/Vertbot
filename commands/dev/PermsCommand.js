@@ -7,7 +7,9 @@ module.exports = class PermsCommand extends Command
     super();
 
     this.name = "perms";
+    this.usage = "<user>";
     this.description = "get the perms of a user";
+    this.permissions = ["dev"];
   }
 
   async doCommand(msg, app, text)
@@ -16,7 +18,7 @@ module.exports = class PermsCommand extends Command
     if(text == "")
     {
       //TODO: help?
-      U.reply(app, msg, "AAAAAAAAA " + text);
+      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("No user mentioned", "Please mention a user."))
       return;
     }
 
@@ -26,7 +28,7 @@ module.exports = class PermsCommand extends Command
     if(member == null)
     {
       //TODO: help member not found
-      U.reply(app, msg, "AAAAAAAAA no member```" + text + "``` " + id);
+      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Invalid user mentioned", "Please mention a valid user."))
       return;
     }
 

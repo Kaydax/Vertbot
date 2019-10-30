@@ -13,5 +13,6 @@ module.exports = class FunCommand extends Command
 
     this.addCommand("./fun/AsciiCommand.js");
     this.addCommand("./fun/BooruCommand.js");
+    this.addCommand("./fun/VideoCommand.js");
   }
 }

@@ -38,7 +38,6 @@ var playlist = Schema({
   autoRemove: Boolean,
   silent: Boolean,
   djmode: Boolean
-  //TODO: volume, time, etc
 });
 
 S.playlist = playlist;

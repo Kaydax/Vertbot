@@ -5,7 +5,7 @@ module.exports = class App
     var secret = require("./secret.js");
     this.bot = new Eris(secret.discord, { maxShards: 'auto' });
     this.commands = new Commands(this);
-    this.version = require('./package.json').version; //"2.1.2"
+    this.version = require('./package.json').version;
     this.config = JSON.parse(fs.readFileSync("./config.json"));
 
     if(this.config.disableDBL == false)
@@ -20,25 +20,6 @@ module.exports = class App
     }
 
     this.db = new Database(this);
-    this.youtube = new Youtube(secret.youtube);
-
-    if (!this.config.cadmium) {
-      console.log("Cadmium integration disabled");
-    } else {
-      this.cadmium = new Cadmium({
-        version: require('./package.json').cadmiumVersion,
-        endpointUrl: this.config.cadmium.endpointUrl,
-        requestUrl: this.config.cadmium.requestUrl,
-        secret: this.config.cadmium.secret,
-        app: this
-      });
-
-      // Errors emitted by on('error')
-      this.cadmium.connect().catch(ex => null);
-      this.cadmium.on('error', err => {
-        console.log("Cadmium error: " + err);
-      });
-    }
 
     this.bot.on("ready", this.onReady.bind(this));
     this.bot.on("guildCreate", this.onJoin.bind(this));
@@ -50,7 +31,7 @@ module.exports = class App
 
   onReady()
   {
-    console.log("Ready!");
+    console.log("Vertbot is now online.");
     this.bot.editStatus("online", {name: "v-help for info", type: 0})
     var secret = require("./secret.js");
     if(this.config.disableDBL == false) { DBA.postGuilds(this.bot, secret.dbots); } //Post the guild stats to dbots apon launch
@@ -109,7 +90,7 @@ module.exports = class App
       } else {
         if(!msg.author.bot)
         {
-          this.bot.createMessage(msg.channel.id, U.createErrorEmbed("This is a DM chat", "I can't do anything in dms"));
+          this.bot.createMessage(msg.channel.id, U.createErrorEmbed("This is a DM chat", "I can't do anything in dms. If you need a gf that bad go outside"));
         }
       }
     }
@@ -127,11 +108,9 @@ var DBL = require("dblapi.js");
 var assert = require("assert");
 var U = require('./utils/Utils.js');
 var DBA = require('./utils/Discord-Bots-api.js');
-var Youtube = require('./utils/Youtube-Search.js');
 var Commands = require("./commands/Commands.js");
 var Lavalink = require("./utils/Lavalink.js");
 var Database = require("./utils/Database.js");
 var Settings = require("./utils/Settings.js");
-var Cadmium = require("./utils/Cadmium.js");
 //var RestartHandler = require("./utils/RestartHandler.js");
 var fs = require("fs");

@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar Lavalink.jar
+screen -S Lavalink java -jar Lavalink.jar

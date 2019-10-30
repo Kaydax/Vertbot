@@ -19,7 +19,7 @@ P.getPerms = async function(app, msg)
   var rp = await P.getRolePerms(app, member);
   var cp = await P.getConfigPerms(app, member);
 
-  return Array.from(new Set([...dbp, ...gp, ...cp,...rp]));
+  return Array.from(new Set([...dbp,...gp, ...cp,...rp]));
 }
 
 P.getDBPerms = async function(app, member)

@@ -7,7 +7,7 @@ module.exports = class Database
     this.dbUrl = this.app.config.dbUrl;
     this.dbName = this.app.config.dbName; //"vertbot"; //TODO: putin config
 
-    this.db = mongoose.createConnection(this.dbUrl + "/" + this.dbName); //TODO change dburl to dburl + dbname
+    this.db = mongoose.createConnection(this.dbUrl + "/" + this.dbName, { useUnifiedTopology: true });
     this.GuildSetting = this.db.model("guildSetting", schema.guildSetting, "settings");
     this.Playlist = this.db.model("playlist", schema.playlist, "settings");
     this.User = this.db.model("user", schema.user, "settings");

@@ -9,12 +9,6 @@
     "disableDBL": true,
     "prefix": "v-",
     "nodes": [
-      { "host": "localhost", "restport": 2333, "region": "us", "password": "youshallnotpass" }
-    ],
-    "cadmium": {
-      "note": "Remove entire block to disable",
-      "requestUrl": "wss://localhost:8449",
-      "endpointUrl": "http://localhost:8448",
-      "secret": "airspeedofanunladenswallow"
-    }
+      { "host": "localhost", "port": 2333, "restport": 2333, "region": "us", "password": "youshallnotpass" }
+    ]
 }

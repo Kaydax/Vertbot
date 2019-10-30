@@ -27,16 +27,10 @@ module.exports = class SkipCommand extends Command
 
   async skip(msg, app, text, pl, vc)
   {
-    if(pl.repeat == false || pl.repeat == undefined)
-    {
-      //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
-      await pl.next(); //advance playlist (wait for save confirmation to prevent glitch)
+    //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
+    await pl.next(); //advance playlist (wait for save confirmation to prevent glitch)
 
-      app.lavalink.play(vc, msg, app, true);
-    } else {
-      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Repeat is on", "Turn off Repeat in order to skip"));
-    }
-
+    app.lavalink.play(vc, msg, app, true);
     return;
   }
 

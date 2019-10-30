@@ -16,7 +16,13 @@ module.exports = class AddCommand extends Command
     //if query doesnt begin with http(s)://, prepend ytsearch:
     if(text.match(/^https?:\/\//i) == null)
     {
-      text = "ytsearch:" + text;
+      text = U.canUseCommand(perms, {permissions: ["dev"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
+    }
+
+    if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["dev"]}, pl))
+    {
+      app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Youtube is disabled", "Youtube playback has been disabled because of Youtube blocking music bots. Join the support server for more info"));
+      return;
     }
 
     //app.bot.createMessage(msg.channel.id, text);
@@ -26,3 +32,4 @@ module.exports = class AddCommand extends Command
 }
 
 var U = require.main.require("./utils/Utils.js");
+var P = require.main.require("./utils/Permissions.js");

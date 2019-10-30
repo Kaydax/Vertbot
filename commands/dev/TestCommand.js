@@ -19,7 +19,7 @@ module.exports = class TestCommand extends Command
 }
 
 /*
-Note:
+NOTE:
 This command is nothing important, as it has no use at all. It just exist for the purpose of debugging
 the bot itself during development and should be ignored.
 */

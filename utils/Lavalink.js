@@ -7,7 +7,7 @@ module.exports = class Lavalink
   {
     this.app = app;
 
-    //Note: As of 3.1.X and up, the WS and Rest Ports are the same
+    //NOTE: As of 3.1.X and up, the WS and Rest Ports are the same
     this.nodes = this.app.config.nodes //[{ host: 'localhost', port: 80, region: 'us', password: 'youshallnotpass' }];
     this.regions = {
       asia: ['hongkong', 'singapore', 'sydney'],
@@ -28,7 +28,6 @@ module.exports = class Lavalink
       userId: this.userId, // the user id of the bot
       regions: this.regions,
       defaultRegion: 'us',
-      //defaultRegion: 'us-central',
     });
 
     this.app.bot.voiceConnections = this.playerManager;
@@ -87,7 +86,10 @@ module.exports = class Lavalink
     if(!pl.silent || doMessage)
     {
       var position = pl.shuffle ? pl.indexes[pl.position] + 1 : pl.position + 1;
-      this.app.bot.createMessage(msg.channel.id, U.createNowPlayingEmbed(position + " / " + pl.tracks.length, "**" + track.info.title + "**"));
+      if(msg.channel != null)
+      {
+        this.app.bot.createMessage(msg.channel.id, U.createNowPlayingEmbed(position + " / " + pl.tracks.length, "**" + track.info.title + "**"));
+      }
     }
   }
 
@@ -110,33 +112,6 @@ module.exports = class Lavalink
     this.unregisterPlayerEvents(player);
 
     this.app.bot.leaveVoiceChannel(vc.id);
-  }
-
-  /**
-   * Endpoint for adding Cadmium tracks with more relevent errors
-   */
-  async caddyAdd(msg, url, vc, pipeline)
-  {
-    var tracks = await this.resolveTracks(this.node, url);
-    if (tracks.tracks.length == 0)
-    {
-      this.app.bot.createMessage(msg.channel.id, U.createErrorEmbed(
-        "Unable to play Cadmium track",
-        "Please check your Cadmium command, or Cadmium's `vertbot.md` manual"
-      ));
-      return;
-    }
-
-    var pl = await this.app.db.getPlaylist(msg.channel.guild.id);
-    tracks.tracks[0].info.title = pipeline;
-    await pl.add(tracks.tracks[0]);
-
-    this.app.bot.createMessage(msg.channel.id, U.createQuickEmbed(
-      "Cadmium song added to queue",
-      `Added pipeline \`${tracks.tracks[0].info.title}\` to the queue.`
-    ));
-    await pl.createShuffleArray();
-    return tracks;
   }
 
   async add(msg, search, play, vc, app)
@@ -177,18 +152,30 @@ module.exports = class Lavalink
     }
     //this.app.bot.createMessage(msg.channel.id, "Adding " + tracks.length + " tracks");
 
-    if(tracks.loadType == "PLAYLIST_LOADED") {
+    if(tracks.loadType == "PLAYLIST_LOADED")
+    {
       this.app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Added new playlist", "Added all of `" + tracks.playlistInfo.name + "` to the playlist"))
     } else {
       this.app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Added new track", "Added `" + tracks.tracks[0].info.title + "` to the playlist"));
     }
 
-    await pl.createShuffleArray();
+    await pl.createShuffleArray(); //Creates an index array used to randomize playback when shuffle is enabled
 
     if(play)
     {
-      if(!pl.shuffle) { await pl.setPosition(pl.tracks.length - 1); };
-      this.play(vc, msg, app, true);
+      //if(!pl.shuffle) { await pl.setPosition(pl.tracks.length - 1); }; //Outdated code, don't use. Allows for bypass of vote skip when dj mode is enabled
+      //this.play(vc, msg, app, true);
+
+      if(pl.djmode == false || pl.djmode == undefined)
+      {
+        if(!pl.shuffle) { await pl.setPosition(pl.tracks.length - 1); };
+        this.play(vc, msg, app, true);
+      }
+
+      //TODO: Add support for people with DJ perms to do a bypass skip with the play command.
+
+      //If DJMode is enabled just do nothing as it will just add the track like normal.
+      //Too lazy to actually implement a DJ perm bypass to this as it will slow down the add command more then it needs to be
     }
 
     //This is for debuging track info:
@@ -238,9 +225,7 @@ module.exports = class Lavalink
       {
         //do repeat
         await pl.restart();
-      }
-      else
-      {
+      } else {
         setTimeout(() => this.stop(msg), 1000);
         this.app.bot.createMessage(msg.channel.id, U.createQuickEmbed("Finished playing", "Playlist over"));
         return;
@@ -297,18 +282,21 @@ module.exports = class Lavalink
 
   getPlayerOld(channel)
   {
-    if(!channel || !channel.guild) {
-        return Promise.reject('Not a guild channel.');
+    if(!channel || !channel.guild)
+    {
+      return Promise.reject('Not a guild channel.');
     }
     //let player = this.app.bot.voiceConnections.get(channel.guild.id);
     let player = this.playerManager.get(channel.guild.id);
-    if (player) {
-        return Promise.resolve(player);
+    if(player)
+    {
+      return Promise.resolve(player);
     }
 
-    let options = {};//create a variable called "options", and store an empty object in it.
-    if (channel.guild.region) {
-        options.region = channel.guild.region; //put "channel.guild.region"'s info in options.region
+    let options = {}; //create a variable called "options", and store an empty object in it.
+    if(channel.guild.region)
+    {
+      options.region = channel.guild.region; //put "channel.guild.region"'s info in options.region
     }
 
     //return this.app.bot.voiceConnections.join(channel.guild.id, channel.id, options);
@@ -326,14 +314,13 @@ module.exports = class Lavalink
       var result = await superagent.get(`http://${node.host}:${node.restport}/loadtracks?identifier=${search}`)
         .set('Authorization', node.password)
         .set('Accept', 'application/json');
-    }
-    catch (err)
-    {
+    } catch (err) {
       throw err;
     }
 
-    if (!result) {
-        throw 'Unable play that video.';
+    if(!result)
+    {
+      throw 'Unable play that video.';
     }
 
     return result.body; // array of tracks resolved from lavalink
@@ -342,6 +329,6 @@ module.exports = class Lavalink
 
 var {PlayerManager} = require("vertbot-eris-lavalink");
 var superagent = require("superagent");
-var SpotifyWebApi = require('spotify-web-api-node');
-var spotifyApi = new SpotifyWebApi();
+//var SpotifyWebApi = require('spotify-web-api-node');
+//var spotifyApi = new SpotifyWebApi();
 var U = require.main.require("./utils/Utils.js");

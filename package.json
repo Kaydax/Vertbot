@@ -1,7 +1,6 @@
 {
   "name": "vertbot",
   "version": "2.5.0",
-  "cadmiumVersion": "skipCheck",
   "description": "Vertbot - A lightweight multi purpose, lag free music bot",
   "main": "main.js",
   "scripts": {
@@ -17,11 +16,11 @@
     "Music"
   ],
   "author": "Kaydax",
-  "license": "DBAD",
+  "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/Kaydax/Vertbot/issues"
+    "url": "https://github.com/Kaydax/Vertbot/issues"
   },
-  "homepage": "https://gitlab.com/Kaydax/Vertbot#readme",
+  "homepage": "https://github.com/Kaydax/Vertbot#readme",
   "dependencies": {
     "assert": "^2.0.0",
     "dblapi.js": "^2.3.0",

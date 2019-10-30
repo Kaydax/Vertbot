@@ -14,8 +14,6 @@ module.exports = class StopCommand extends Command
 
   async doCommand(msg, app, text)
   {
-    var vc = U.msg2vc(msg);
-
     app.lavalink.stop(msg, app);
   }
 }

@@ -23,20 +23,27 @@ module.exports = class GotoCommand extends Command
     var vc = U.msg2vc(msg);
     var pl = await app.db.getPlaylist(msg.channel.guild.id);
     var gid = U.msg2gid(msg);
-    var num = text.match(/\d+/)[0] - 1;
+    var hasNumber = /\d/;
+    var num = parseInt(text) - 1;
 
-    //glitch likely caused by lavalink grabbing its own (slightly outdated) copy of the playlist
     if(text.match(/^\d+$/) && (text.match(/^\d+$/) != 0))
     {
-      await pl.setPosition(pl.shuffle ? await this.findSong(num, pl) : num); //advance playlist (wait for save confirmation to prevent glitch)
-      app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Set new track", "Set track to: `" + pl.tracks[text.match(/^\d+$/)[0] - 1].info.title + "`"));
-
-      if(U.currentVC(app, gid) != null)
+      if(pl.tracks[num] == undefined)
       {
-        app.lavalink.play(vc, msg, app);
+        app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Invalid number", "Please put a valid number"));
+        return;
+      } else {
+        await pl.setPosition(pl.shuffle ? await this.findSong(num, pl) : num); //advance playlist (wait for save confirmation to prevent glitch)
+        app.bot.createMessage(msg.channel.id, U.createSuccessEmbed("Set new track", "Set track to: `" + pl.tracks[num].info.title + "`"));
+
+        if(U.currentVC(app, gid) != null)
+        {
+          app.lavalink.play(vc, msg, app);
+        }
       }
     } else {
       app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Invalid number", "Please put a valid number"));
+      return;
     }
   }
 }

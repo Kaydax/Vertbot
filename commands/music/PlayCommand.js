@@ -15,13 +15,21 @@ module.exports = class PlayCommand extends Command
   async doCommand(msg, app, text)
   {
     var vc = U.msg2vc(msg);
+    var pl = await app.db.getPlaylist(msg.channel.guild.id);
+    var perms = await P.getPerms(app, msg);
     if(msg.member.voiceState.channelID != null)
     {
       if(text.length > 0)
       {
         if(text.match(/^https?:\/\//i) == null)
         {
-          text = "ytsearch:" + text;
+          text = U.canUseCommand(perms, {permissions: ["dev"]}, pl) ? "ytsearch:" + text : "scsearch:" + text;
+        }
+
+        if(text.match(/(www\.youtube\.com|youtu\.?be)\/.+$/i) && !U.canUseCommand(perms, {permissions: ["dev"]}, pl))
+        {
+          app.bot.createMessage(msg.channel.id, U.createErrorEmbed("Youtube is disabled", "Youtube playback has been disabled because of Youtube blocking music bots. Join the support server for more info"));
+          return;
         }
 
         //app.bot.createMessage(msg.channel.id, text);
@@ -37,3 +45,4 @@ module.exports = class PlayCommand extends Command
 }
 
 var U = require.main.require("./utils/Utils.js");
+var P = require.main.require("./utils/Permissions.js");
