@@ -62,14 +62,14 @@ module.exports = class Command
 
     if(ret != null && ret.sub != this)
     {
+      if(perms.includes("banned") && !perms.includes("dev"))
+      {
+        app.bot.createMessage(message.channel.id, U.createErrorEmbed("You seem to be banned", "You seem to be banned from using the bot by a developer, sorry about that..."));
+        return;
+      }
+      
       if(!U.canUseCommand(perms, ret.sub, pl))
       {
-        if(perms.includes("banned") && !perms.includes("dev"))
-        {
-          app.bot.createMessage(message.channel.id, U.createErrorEmbed("You seem to be banned", "You seem to be banned from using the bot by a developer, sorry about that..."));
-          return;
-        }
-
         //app.bot.createMessage(message.channel.id, U.wrapCode("ur perms here: " + Array.from(perms).join(" ")));
         app.bot.createMessage(message.channel.id, U.createErrorEmbed("You don't have permissions", "You seem to not have `" + ret.sub.permissions.join(", ") + "`"));
         return;

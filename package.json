@@ -1,6 +1,6 @@
 {
   "name": "vertbot",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Vertbot - A lightweight multi purpose, lag free music bot",
   "main": "main.js",
   "scripts": {
