@@ -399,7 +399,7 @@ U.createDonateEmbed = function()
   return {
     embed:
     {
-      title: "",
+      title: "Help me continue to run by donating!",
       description: "If you want to help me [click here](https://donatebot.io/checkout/317570975908495361)",
       color: U.hexToColour("00C4B1"),
       fields:
