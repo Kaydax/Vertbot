@@ -1,6 +1,6 @@
 var Command = require("./Command.js");
 
-module.exports = class PingCommand extends Command
+module.exports = class DonateCommand extends Command
 {
   constructor()
   {
@@ -12,6 +12,8 @@ module.exports = class PingCommand extends Command
 
   async doCommand(msg, app, text)
   {
-    app.bot.createMessage(msg.channel.id, 'If you would like to help by donating go here: https://donatebot.io/checkout/317570975908495361');
+    app.bot.createMessage(msg.channel.id, U.createDonateEmbed());
   }
 }
+
+var U = require.main.require("./utils/Utils.js");

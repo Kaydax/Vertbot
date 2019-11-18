@@ -366,7 +366,7 @@ U.createInfoEmbed = function(app, gid, prefix, msg)
       ],
       footer:
       {
-        text: "Developed by: Kaydax#0001 & tehZevo#0321. Cadmium integration by UniQMG#0522."
+        text: "Developed by: Kaydax#0001 & tehZevo#0321."
       }
     }
   } //U.embedField("", "", true)
@@ -382,14 +382,46 @@ U.createWelcomeEmbed = function(app)
       color: U.hexToColour("00C4B1"),
       fields:
       [
-        U.embedField("My Support Server", "[Join Now](https://discord.gg/WPUU2dF)", true),
-        U.embedField("Vote For Me", "[Please Vote](https://discordbots.org/bot/316520238835433482/vote)", true),
-        U.embedField("Donate Now", "[Donate](https://donatebot.io/checkout/317570975908495361)", true),
+        U.embedField("My Support Server:", "[Join Now](https://discord.gg/WPUU2dF)", true),
+        U.embedField("Vote For Me:", "[Please Vote](https://discordbots.org/bot/316520238835433482/vote)", true),
+        U.embedField("Donate Now:", "Please help me continue to run by [clicking here](https://donatebot.io/checkout/317570975908495361) else do `v-donate`", true),
       ],
       footer:
       {
         text: "Developed by: Kaydax#0001 & tehZevo#0321"
       }
+    }
+  }
+}
+
+U.createDonateEmbed = function()
+{
+  return {
+    embed:
+    {
+      title: "",
+      description: "If you want to help me [click here](https://donatebot.io/checkout/317570975908495361)",
+      color: U.hexToColour("00C4B1"),
+      fields:
+      [
+        U.embedField("I also support crypto:", "
+        ```\n
+        Bitcoin: 12gzEmGsNtqPpaJQG4dKGAFcgvu7aP6q47\n
+        Ethereum: 0xCC4050FF70008D3D9875CeEFbDCbCe27F5bc61bd\n
+        XRP: r4TQWdYrpiibCwmXWZhajbnUcwHZvKRebn\n
+        BAT: 0xCC4050FF70008D3D9875CeEFbDCbCe27F5bc61bd\n
+        Stellar: GBCVXJJQDIT2WJYRVN23DBC635VPZDRGCBG3A3ILMGJWZOCWK4GSKAEF\n
+        Bitcoin Cash: qpytmmpm8an6cfds3t8mqyxnn4pcmqderscv6dgtar\n
+        Binance Coin: bnb1pf4mwyh76g5y4gqjh9khlsagqxy8trjhnel0mq\n
+        Bitcoin SV: 1DXqBUUXUwiEjSJy4zFg7Hsn455iCxBwCi\n
+        Dash: XxB815XHAMGdv5PECfWtnx6oyHmP4FW2pv\n
+        Litecoin: LdCHqHD4ggWdRQF84TSBU5BahJAn7LvF2q\n
+        NEO: AR1piF14vZfesSmERGbsyJ1b5cct6SYqUL\n
+        Tron: TULZsQj4539DHi9mA9Df7RFBmjAeQeSkoV\n
+        TUSD: 0xCC4050FF70008D3D9875CeEFbDCbCe27F5bc61bd\n
+        USDC: 0xCC4050FF70008D3D9875CeEFbDCbCe27F5bc61bd\n
+        ```", false),
+      ]
     }
   }
 }
